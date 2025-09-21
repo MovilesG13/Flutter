@@ -149,11 +149,11 @@ class _SavingsTabsState extends State<SavingsTabs> {
           _GoalCard(
             icon: Icons.phone_iphone,
             iconColor: Color(0xFFbde3f6),
-            title: 'Celular Nuevo',
+            title: 'New Phone',
             goal: 1200,
             progress: 0.54,
             saved: 650,
-            missing: 550,
+            amoung_left: 550,
             monthly: 100,
             months: 6,
           ),
@@ -161,11 +161,11 @@ class _SavingsTabsState extends State<SavingsTabs> {
           _GoalCard(
             icon: Icons.home,
             iconColor: Color(0xFFbde3f6),
-            title: 'Casa Sola',
+            title: 'New House',
             goal: 50000,
             progress: 0.12,
             saved: 6000,
-            missing: 44000,
+            amoung_left: 44000,
             monthly: 1200,
             months: 37,
           ),
@@ -218,7 +218,7 @@ class _GoalCard extends StatelessWidget {
   final double goal;
   final double progress;
   final double saved;
-  final double missing;
+  final double amoung_left;
   final double monthly;
   final int months;
   const _GoalCard({
@@ -228,7 +228,7 @@ class _GoalCard extends StatelessWidget {
     required this.goal,
     required this.progress,
     required this.saved,
-    required this.missing,
+    required this.amoung_left,
     required this.monthly,
     required this.months,
   });
@@ -290,8 +290,8 @@ class _GoalCard extends StatelessWidget {
             children: [
               Column(
                 children: [
-                  Text('Missing', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
-                  Text('\$${missing.toStringAsFixed(0)}', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text('Left', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                  Text('\$${amoung_left.toStringAsFixed(0)}', style: TextStyle(fontWeight: FontWeight.bold)),
                 ],
               ),
               Column(

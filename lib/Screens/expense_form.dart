@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class IncomeForm extends StatefulWidget {
+class ExpenseForm extends StatefulWidget {
   @override
-  State<IncomeForm> createState() => IncomeFormState();
+  State<ExpenseForm> createState() => ExpenseFormState();
 }
 
-class IncomeFormState extends State<IncomeForm> {
+class ExpenseFormState extends State<ExpenseForm> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
@@ -13,7 +13,7 @@ class IncomeFormState extends State<IncomeForm> {
   DateTime? _selectedDate;
 
   final List<String> _categories = [
-    'Salary', 'Freelance', 'Gift', 'Other'
+    'Food', 'Transport', 'Shopping', 'Bills', 'Other'
   ];
 
   @override
@@ -26,7 +26,7 @@ class IncomeFormState extends State<IncomeForm> {
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Color(0xFFeafbe7), // verde muy claro
+              color: Color(0xFFfdeaea), // rojo muy claro
               borderRadius: BorderRadius.circular(12),
             ),
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
@@ -34,9 +34,9 @@ class IncomeFormState extends State<IncomeForm> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
-                Text('Add Income', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                Text('Add Expense', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                 SizedBox(height: 4),
-                Text('Register a new income', style: TextStyle(fontSize: 15, color: Colors.grey)),
+                Text('Register a new expense', style: TextStyle(fontSize: 15, color: Colors.grey)),
               ],
             ),
           ),
@@ -54,9 +54,9 @@ class IncomeFormState extends State<IncomeForm> {
                   children: [
                     Row(
                       children: const [
-                        Icon(Icons.trending_up, color: Color(0xFF06c951)),
+                        Icon(Icons.money_off, color: Color(0xFFfa2e38), size: 28),
                         SizedBox(width: 8),
-                        Text('Income Details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text('Expense Details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       ],
                     ),
                     const SizedBox(height: 18),
@@ -68,7 +68,7 @@ class IncomeFormState extends State<IncomeForm> {
                         prefixText: "\$",
                         border: OutlineInputBorder(),
                         filled: true,
-                        fillColor: Color.fromARGB(124, 199, 205, 202), // gris claro
+                        fillColor: Color.fromARGB(124, 205, 199, 202), // gris claro
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) return 'Enter the amount';
@@ -83,7 +83,7 @@ class IncomeFormState extends State<IncomeForm> {
                         labelText: 'Description',
                         border: OutlineInputBorder(),
                         filled: true,
-                        fillColor: Color.fromARGB(124, 199, 205, 202), // gris claro
+                        fillColor: Color.fromARGB(124, 205, 199, 202), // gris claro
                       ),
                       // validator removido, ya no es obligatorio
                     ),
@@ -94,7 +94,7 @@ class IncomeFormState extends State<IncomeForm> {
                         labelText: 'Category *',
                         border: OutlineInputBorder(),
                         filled: true,
-                        fillColor: Color.fromARGB(124, 199, 205, 202), // gris claro
+                        fillColor: Color.fromARGB(124, 205, 199, 202), // gris claro
                       ),
                       items: _categories.map((cat) => DropdownMenuItem(value: cat, child: Text(cat))).toList(),
                       onChanged: (val) => setState(() => _category = val),
@@ -116,7 +116,7 @@ class IncomeFormState extends State<IncomeForm> {
                           labelText: 'Date *',
                           border: OutlineInputBorder(),
                           filled: true,
-                          fillColor: Color.fromARGB(124, 199, 205, 202), // gris claro
+                          fillColor: Color.fromARGB(124, 205, 199, 202), // gris claro
                         ),
                         child: Text(_selectedDate == null ? 'Select a date' : '${_selectedDate!.month.toString().padLeft(2, '0')}/${_selectedDate!.day.toString().padLeft(2, '0')}/${_selectedDate!.year}'),
                       ),
@@ -127,19 +127,19 @@ class IncomeFormState extends State<IncomeForm> {
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFbde3f6),
+                          backgroundColor: const Color(0xFFfdeaea), // rojo claro
                           foregroundColor: Colors.black,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         ),
-                        icon: const Icon(Icons.save, color: Color(0xFF0e538f)),
-                        label: const Text('Save Income', style: TextStyle(fontSize: 16)),
+                        icon: const Icon(Icons.save, color: Color(0xFFfa2e38)),
+                        label: const Text('Save Expense', style: TextStyle(fontSize: 16)),
                         onPressed: () {
                           if (_formKey.currentState!.validate() && _selectedDate != null) {
-                            // Save the income in your database or state
+                            // Save the expense in your database or state
                             Navigator.pop(context);
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Income saved')),
+                              const SnackBar(content: Text('Expense saved')),
                             );
                           } else if (_selectedDate == null) {
                             ScaffoldMessenger.of(context).showSnackBar(
