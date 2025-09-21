@@ -6,12 +6,16 @@ class SignupScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blue.shade50,
+       backgroundColor: const Color(0xFFbde3f6), // azul de fondo
       body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+        padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+              "Images/LogoWelcome2.png",
+              height: 200,
+            ),
             const Text(
               "Create Account",
               style: TextStyle(
