@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'principal.dart';
+
 
 class SignupScreen extends StatelessWidget {
   const SignupScreen({super.key});
@@ -51,7 +53,12 @@ class SignupScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HomeScreen()),
+                );
+              },
               child: const Text("Sign up"),
             ),
             const SizedBox(height: 10),
