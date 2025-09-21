@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:financeapp_flutter/Screens/income_form.dart';
+import 'package:financeapp_flutter/Screens/savings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,7 +15,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _pages = [
     const DashboardScreen(),
-    const Center(child: Text("Savings")),
+    SavingsScreen(),
     const Center(child: Text("Reports")),
     const Center(child: Text("Profile")),
   ];
@@ -189,12 +191,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
               heroTag: "BotonIncome",
               backgroundColor: const Color(0xFF06c951),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        const Center(child: Text("Income Screen")),
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                   ),
+                  builder: (context) {
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        bottom: MediaQuery.of(context).viewInsets.bottom,
+                        left: 20,
+                        right: 20,
+                        top: 20,
+                      ),
+                      child: IncomeForm(),
+                    );
+                  },
                 );
               },
               child: const Icon(Icons.trending_up),
