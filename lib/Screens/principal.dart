@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
@@ -45,55 +44,65 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Valores fijos
-    final double income = 3000;
-    final double expenses = 1478.43;
-    final double balance = income - expenses;
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
 
-    final List<double> values = [income, expenses, balance];
+class _DashboardScreenState extends State<DashboardScreen> {
+  late List<double> values;
+  bool _showOptions = false;
 
-    final List<Color> barColors = [
-      Colors.green, // Income
-      Colors.red,   // Expenses
-      Colors.blue,  // Balance
+  final List<Color> barColors = [
+    Color(0xFF06c951), // Income
+    Color(0xFFfa2e38),   // Expenses fa2e38
+    Colors.blue,  // Balance
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    values = [
+      2500,    // Income fijo
+      1856.24, // Expenses fijo
+      643.76,  // Balance fijo
     ];
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: const Color(0xFFbde3f6), // azul oscuro
+        backgroundColor: const Color(0xFFbde3f6),
         toolbarHeight: 100,
         title: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Image.asset(
-              "Images/LogoIcon2.png", 
-              height: 50,
+              "Images/LogoIcon2.png",
+              height: 40,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Welcome, Sofia",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color (0xFF0e538f)),
-                ),
-                const SizedBox(height: 5),
-                const Text(
-                  "Your balance for September is",
-                  style: TextStyle(fontSize: 14, color: Color (0xFF0e538f)),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  "\$${balance.toStringAsFixed(2)}",
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Color (0xFF0e538f)),
-                ),
+              children: const [
+                Text("Welcome, Sofia",
+                    style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0e538f))),
+                SizedBox(height: 5),
+                Text("Your balance for September is",
+                    style: TextStyle(fontSize: 16, color: Color(0xFF0e538f))),
+                SizedBox(height: 5),
+                Text("\$ 643.76",
+                    style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF0e538f))),
               ],
             ),
           ],
@@ -114,15 +123,23 @@ class DashboardScreen extends StatelessWidget {
                 alignment: BarChartAlignment.spaceAround,
                 barTouchData: BarTouchData(enabled: true),
                 titlesData: FlTitlesData(
-                  leftTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: true),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 50,
+                      getTitlesWidget: (value, meta) {
+                        return Text(
+                          "\$${value.toInt()}",
+                          style: const TextStyle(fontSize: 10),
+                        );
+                      },
+                      interval: 500,
+                    ),
                   ),
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
+                  rightTitles:
+                      const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles:
+                      const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
@@ -142,6 +159,7 @@ class DashboardScreen extends StatelessWidget {
                   ),
                 ),
                 borderData: FlBorderData(show: false),
+                gridData: FlGridData(show: true, drawHorizontalLine: true),
                 barGroups: values.asMap().entries.map((entry) {
                   final index = entry.key;
                   final value = entry.value;
@@ -162,21 +180,57 @@ class DashboardScreen extends StatelessWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF0e538f),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  const Center(child: Text("Expenses / Income Screen")),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (_showOptions) ...[
+            const SizedBox(height: 10),
+            FloatingActionButton(
+              heroTag: "BotonIncome",
+              backgroundColor: const Color(0xFF06c951),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        const Center(child: Text("Income Screen")),
+                  ),
+                );
+              },
+              child: const Icon(Icons.trending_up),
             ),
-          );
-        },
-        child: const Icon(Icons.add, size: 28),
+            const SizedBox(height: 10),
+            FloatingActionButton(
+              heroTag: "BotonExpenses",
+              backgroundColor: const Color(0xFFfa2e38),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        const Center(child: Text("Expenses Screen")),
+                  ),
+                );
+              },
+              child: const Icon(Icons.control_point),
+            ),
+          ],
+          FloatingActionButton(
+            heroTag: "Boton+",
+            backgroundColor: const Color(0xFFbde3f6),
+            onPressed: () {
+              setState(() {
+                _showOptions = !_showOptions;
+              });
+            },
+            child: const Icon(Icons.add, size: 28),
+          ),
+        ],
       ),
     );
   }
 }
+
+
 
 
