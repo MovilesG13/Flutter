@@ -14,7 +14,7 @@ class SavingsScreen extends StatelessWidget {
               // Header
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                padding: const EdgeInsets.only(left: 20, right: 20, top: 0, bottom: 24),
                 decoration: const BoxDecoration(
                   color: Color(0xFFbde3f6),
                   borderRadius: BorderRadius.only(
@@ -44,7 +44,6 @@ class SavingsScreen extends StatelessWidget {
                       style: TextStyle(fontSize: 16, color: Color(0xFF0e538f)),
                     ),
                     SizedBox(height: 18),
-                    // Progress Card
                     Container(
                       width: double.infinity,
                       padding: EdgeInsets.all(16),
