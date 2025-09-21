@@ -6,34 +6,19 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blue.shade50, // fondo azul
+      backgroundColor: const Color(0xFFbde3f6), // azul de fondo
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Icono de la app, billetera 
-              const Icon(Icons.account_balance_wallet, size: 80, color: Colors.black),
+              Image.asset(
+              "Images/LogoWelcome2.png",
+              height: 200,
+            ),
 
               const SizedBox(height: 20),
-
-              // Título. cambiar cuando se tenga nombre
-              const Text(
-                "FinanceApp",
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-              ),
-
-              const SizedBox(height: 8),
-
-              // Subtítulo
-              const Text(
-                "Manage your finances smartly",
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-
-              const SizedBox(height: 32),
 
               // Campo correo o Login 
               TextField(
