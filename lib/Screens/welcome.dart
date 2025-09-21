@@ -8,23 +8,23 @@ class WelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blue.shade50,
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
+      backgroundColor: const Color(0xFFbde3f6), // azul de fondo
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              "Manage your finances smartly",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
+            // Logo en el centro
+            Image.asset(
+              "Images/LogoWelcome2.png",
+              height: 200,
             ),
-            const SizedBox(height: 40),
-            OutlinedButton(
+            const SizedBox(height: 50),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: Color(0xFF0e538f),
+                minimumSize: const Size(200, 50),
+              ),
               onPressed: () {
                 Navigator.push(
                   context,
@@ -33,8 +33,13 @@ class WelcomeScreen extends StatelessWidget {
               },
               child: const Text("Log in"),
             ),
-            const SizedBox(height: 10),
-            OutlinedButton(
+            const SizedBox(height: 20),
+            ElevatedButton(
+              style: OutlinedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: Color(0xFF0e538f),
+                minimumSize: const Size(200, 50),
+              ),
               onPressed: () {
                 Navigator.push(
                   context,
@@ -49,3 +54,4 @@ class WelcomeScreen extends StatelessWidget {
     );
   }
 }
+
