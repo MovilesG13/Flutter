@@ -5,6 +5,8 @@ import 'income_form.dart';
 import 'expense_form.dart';
 import 'savings_screen.dart';
 import 'savings_tabs.dart';
+import 'notes_screen.dart';
+
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -183,8 +185,11 @@ class _HomeScreenState extends State<HomeScreen> {
           SavingsScreen(),
           // Reports Tab
           Center(child: Text('Reports', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF0e538f)))),
+          // notes
+          NotesScreen(),
           // Profile Tab
           Center(child: Text('Profile', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF0e538f)))),
+          
         ],
       ),
       floatingActionButton: _selectedIndex == 0
@@ -281,6 +286,10 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Reports',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.note_alt),
+            label: 'Notes',
+          ),
+           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Profile',
           ),
