@@ -33,6 +33,8 @@ class _InfoCard extends StatelessWidget {
 }
 
 class SavingsTabs extends StatefulWidget {
+  const SavingsTabs({super.key});
+
   @override
   State<SavingsTabs> createState() => _SavingsTabsState();
 }
@@ -251,8 +253,8 @@ class _GoalCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 backgroundColor: iconColor,
-                child: Icon(icon, color: Color(0xFF0e538f)),
                 radius: 22,
+                child: Icon(icon, color: Color(0xFF0e538f)),
               ),
               SizedBox(width: 12),
               Expanded(

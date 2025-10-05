@@ -3,6 +3,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'savings_tabs.dart';
 
 class SavingsScreen extends StatelessWidget {
+  const SavingsScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
