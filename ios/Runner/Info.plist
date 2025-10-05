@@ -40,12 +40,14 @@
 
 	<!-- 👇 Permisos de cámara y galería -->
 	<key>NSCameraUsageDescription</key>
-	<string>This app requires camera access to attach photos to notes.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>This app requires photo library access to save and view your notes’ photos.</string>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
+    <string>La app necesita usar la cámara para tomar fotos de tus notas.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>La app necesita acceder a tus fotos para adjuntarlas a notas.</string>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>La app necesita guardar las fotos que tomas.</string>
+    <key>CADisableMinimumFrameDurationOnPhone</key>
+    <true/>
+    <key>UIApplicationSupportsIndirectInputEvents</key>
+    <true/>
 </dict>
 </plist>
