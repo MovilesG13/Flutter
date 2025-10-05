@@ -1,0 +1,82 @@
+{
+  "project_info": {
+    "project_number": "783109027463",
+    "project_id": "monify-1384d",
+    "storage_bucket": "monify-1384d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:783109027463:android:7f02727c6008e3cc3aea22",
+        "android_client_info": {
+          "package_name": "com.example.financeapp_flutter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "783109027463-0rriq2v83nu6s02600qcnre4qc6ih651.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyALydwjF_feDUiUGJVUr4iDdzkUSIVJRys"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "783109027463-0rriq2v83nu6s02600qcnre4qc6ih651.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "783109027463-kmp5p496rjmi99ln13dj13nus03j42fr.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.financeappFlutter"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:783109027463:android:985919d2ce60530d3aea22",
+        "android_client_info": {
+          "package_name": "com.example.monify_kotlin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "783109027463-0rriq2v83nu6s02600qcnre4qc6ih651.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyALydwjF_feDUiUGJVUr4iDdzkUSIVJRys"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "783109027463-0rriq2v83nu6s02600qcnre4qc6ih651.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "783109027463-kmp5p496rjmi99ln13dj13nus03j42fr.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.financeappFlutter"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

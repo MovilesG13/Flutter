@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'login.dart';
 import 'signup.dart';
+import '../auth/google_auth_service.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -47,6 +48,26 @@ class WelcomeScreen extends StatelessWidget {
                 );
               },
               child: const Text("Sign up"),
+            ),
+            const SizedBox(height: 20),
+            OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(200, 50),
+                foregroundColor: Colors.white,
+                side: const BorderSide(color: Colors.white),
+              ),
+              icon: const Icon(Icons.login),
+              label: const Text('Continue with Google'),
+              onPressed: () async {
+                try {
+                  await GoogleAuthService.signInWithGoogle();
+                  // AuthGate mostrará Home automáticamente.
+                } catch (_) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Error al iniciar con Google')),
+                  );
+                }
+              },
             ),
           ],
         ),
