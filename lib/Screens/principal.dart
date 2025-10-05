@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'income_form.dart';
 import 'expense_form.dart';
 import 'savings_screen.dart';
-import 'notes_screen.dart'; // 👈 Import nuevo para Notes
+import 'notes_screen.dart';
 import '../services/transaction_service.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -17,70 +17,93 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   bool _showOptions = false;
-  final List<double> values = [2000, 1356.24, 643.76]; // placeholder values
+  final List<double> values = [2000, 1356.24, 643.76];
   final List<Color> barColors = [
-    Color(0xFF06c951),
-    Color(0xFFfa2e38),
-    Color(0xFF0e538f)
+    const Color(0xFF06c951),
+    const Color(0xFFfa2e38),
+    const Color(0xFF0e538f)
   ];
 
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-    final displayName =
-        (user?.displayName != null && user!.displayName!.trim().isNotEmpty)
-            ? user.displayName!.trim()
-            : (user?.email?.split('@').first ?? 'User');
-    const monthNames = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December'
-    ];
-    final currentMonth = monthNames[DateTime.now().month - 1];
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: _selectedIndex == 0
-          ? AppBar(
-              automaticallyImplyLeading: false,
-              backgroundColor: const Color(0xFFbde3f6),
-              toolbarHeight: 100,
-              title: Row(
-                children: [
-                  Image.asset(
-                    "Images/LogoIcon2.png",
-                    height: 40,
-                  ),
-                  const SizedBox(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Welcome, $displayName",
-                          style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF0e538f))),
-                      const SizedBox(height: 5),
-                      Text("Your balance for $currentMonth is",
-                          style: const TextStyle(
-                              fontSize: 16, color: Color(0xFF0e538f))),
-                      const SizedBox(height: 5),
-                      Text("\$${values[2].toStringAsFixed(2)}",
-                          style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF0e538f))),
-                    ],
-                  ),
-                ],
+          ? PreferredSize(
+              preferredSize: const Size.fromHeight(120),
+              child: StreamBuilder(
+                stream: TransactionService.instance.userMovementsStream(),
+                builder: (context, snapshot) {
+                  double balance = 0;
+                  if (snapshot.hasData) {
+                    final movements = snapshot.data!;
+                    double income = 0;
+                    double expense = 0;
+                    for (final m in movements) {
+                      if (m.type == 'income') {
+                        income += m.amount;
+                      } else {
+                        expense += m.amount;
+                      }
+                    }
+                    balance = income - expense;
+                  }
+
+                  final user = FirebaseAuth.instance.currentUser;
+                  final displayName = (user?.displayName != null &&
+                          user!.displayName!.trim().isNotEmpty)
+                      ? user.displayName!.trim()
+                      : (user?.email?.split('@').first ?? 'User');
+
+                  const monthNames = [
+                    'January',
+                    'February',
+                    'March',
+                    'April',
+                    'May',
+                    'June',
+                    'July',
+                    'August',
+                    'September',
+                    'October',
+                    'November',
+                    'December'
+                  ];
+                  final currentMonth = monthNames[DateTime.now().month - 1];
+
+                  return AppBar(
+                    automaticallyImplyLeading: false,
+                    backgroundColor: const Color(0xFFbde3f6),
+                    toolbarHeight: 100,
+                    title: Row(
+                      children: [
+                        Image.asset("Images/LogoIcon2.png", height: 40),
+                        const SizedBox(width: 10),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("Welcome, $displayName",
+                                style: const TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF0e538f))),
+                            const SizedBox(height: 5),
+                            Text("Your balance for $currentMonth is",
+                                style: const TextStyle(
+                                    fontSize: 16,
+                                    color: Color.fromRGBO(14, 83, 143, 1))),
+                            const SizedBox(height: 5),
+                            Text("\$${balance.toStringAsFixed(2)}",
+                                style: const TextStyle(
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF0e538f))),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
             )
           : null,
@@ -89,168 +112,137 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           // Home Tab
           SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 18),
-                // Example reactive total (optional later):
-                StreamBuilder(
-                  stream: TransactionService.instance.userMovementsStream(),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) return const SizedBox.shrink();
-                    final movements = snapshot.data!;
-                    double income = 0;
-                    double expense = 0;
-                    for (final m in movements) {
-                      if (m.type == 'income') income += m.amount; else expense += m.amount;
-                    }
-                    final balance = income - expense;
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: Text('Current balance: ' + balance.toStringAsFixed(2), style: const TextStyle(fontWeight: FontWeight.bold)),
-                    );
-                  },
-                ),
-                const Text(
-                  "Financial Overview",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  height: 300,
-                  child: BarChart(
-                    BarChartData(
-                      alignment: BarChartAlignment.spaceAround,
-                      barTouchData: BarTouchData(enabled: true),
-                      titlesData: FlTitlesData(
-                        leftTitles: AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: true,
-                            reservedSize: 50,
-                            getTitlesWidget: (value, meta) {
-                              return Text(
-                                "\$${value.toInt()}",
-                                style: const TextStyle(fontSize: 10),
-                              );
-                            },
-                            interval: 500,
-                          ),
-                        ),
-                        rightTitles: const AxisTitles(
-                            sideTitles: SideTitles(showTitles: false)),
-                        topTitles: const AxisTitles(
-                            sideTitles: SideTitles(showTitles: false)),
-                        bottomTitles: AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: true,
-                            getTitlesWidget: (value, meta) {
-                              switch (value.toInt()) {
-                                case 0:
-                                  return const Text("Income");
-                                case 1:
-                                  return const Text("Expenses");
-                                case 2:
-                                  return const Text("Balance");
-                                default:
-                                  return const Text("");
-                              }
-                            },
-                          ),
-                        ),
-                      ),
-                      borderData: FlBorderData(show: false),
-                      gridData:
-                          FlGridData(show: true, drawHorizontalLine: true),
-                      barGroups: values.asMap().entries.map((entry) {
-                        final index = entry.key;
-                        final value = entry.value;
-                        return BarChartGroupData(
-                          x: index,
-                          barRods: [
-                            BarChartRodData(
-                              toY: value,
-                              color: barColors[index],
-                              width: 30,
-                              borderRadius: BorderRadius.circular(6),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    height: 300,
+                    child: BarChart(
+                      BarChartData(
+                        alignment: BarChartAlignment.spaceAround,
+                        barTouchData: BarTouchData(enabled: true),
+                        titlesData: FlTitlesData(
+                          leftTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              reservedSize: 50,
+                              getTitlesWidget: (value, meta) {
+                                return Text(
+                                  "\$${value.toInt()}",
+                                  style: const TextStyle(fontSize: 10),
+                                );
+                              },
+                              interval: 500,
                             ),
-                          ],
-                        );
-                      }).toList(),
+                          ),
+                          rightTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false)),
+                          topTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false)),
+                          bottomTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              getTitlesWidget: (value, meta) {
+                                switch (value.toInt()) {
+                                  case 0:
+                                    return const Text("Income");
+                                  case 1:
+                                    return const Text("Expenses");
+                                  case 2:
+                                    return const Text("Balance");
+                                  default:
+                                    return const Text("");
+                                }
+                              },
+                            ),
+                          ),
+                        ),
+                        borderData: FlBorderData(show: false),
+                        gridData:
+                            FlGridData(show: true, drawHorizontalLine: true),
+                        barGroups: values.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final value = entry.value;
+                          return BarChartGroupData(
+                            x: index,
+                            barRods: [
+                              BarChartRodData(
+                                toY: value,
+                                color: barColors[index],
+                                width: 30,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 24),
-                // Metas de ahorro
-                Container(
-                  margin: EdgeInsets.symmetric(horizontal: 12),
-                  padding: EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 8,
-                          offset: Offset(0, 2))
-                    ],
-                    border: Border.all(color: Color(0xFFe0e0e0)),
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: const [
+                        BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 8,
+                            offset: Offset(0, 2))
+                      ],
+                      border: Border.all(color: Color(0xFFe0e0e0)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Row(
+                          children: [
+                            Icon(Icons.track_changes, color: Color(0xFF0e538f)),
+                            SizedBox(width: 8),
+                            Text('Saving Goals',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 18)),
+                          ],
+                        ),
+                        SizedBox(height: 18),
+                        _MiniGoalCard(
+                          icon: Icons.phone_iphone,
+                          iconColor: Color(0xFFbde3f6),
+                          title: 'New Phone',
+                          saved: 650,
+                          goal: 1200,
+                        ),
+                        SizedBox(height: 18),
+                        _MiniGoalCard(
+                          icon: Icons.home,
+                          iconColor: Color(0xFFbde3f6),
+                          title: 'New House',
+                          saved: 12500,
+                          goal: 50000,
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.track_changes, color: Color(0xFF0e538f)),
-                          SizedBox(width: 8),
-                          Text('Saving Goals',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 18)),
-                        ],
-                      ),
-                      SizedBox(height: 18),
-                      _MiniGoalCard(
-                        icon: Icons.phone_iphone,
-                        iconColor: Color(0xFFbde3f6),
-                        title: 'New Phone',
-                        saved: 650,
-                        goal: 1200,
-                      ),
-                      SizedBox(height: 18),
-                      _MiniGoalCard(
-                        icon: Icons.home,
-                        iconColor: Color(0xFFbde3f6),
-                        title: 'New House',
-                        saved: 12500,
-                        goal: 50000,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-              ],
+                ],
+              ),
             ),
           ),
-
-          // Savings Tab
-          SavingsScreen(),
-
-          // Reports Tab
-          Center(
+          const SavingsScreen(),
+          const Center(
               child: Text('Reports',
                   style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF0e538f)))),
-
-          // Notes Tab 👇 nueva pantalla
-          NotesScreen(),
-
-          // Profile Tab
+          const NotesScreen(),
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Profile',
+                const Text('Profile',
                     style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -297,18 +289,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           borderRadius:
                               BorderRadius.vertical(top: Radius.circular(20)),
                         ),
-                        builder: (context) {
-                          return Padding(
-                            padding: EdgeInsets.only(
+                        builder: (context) => Padding(
+                          padding: EdgeInsets.only(
                               bottom:
-                                  MediaQuery.of(context).viewInsets.bottom,
-                              left: 20,
-                              right: 20,
-                              top: 20,
-                            ),
-                            child: IncomeForm(),
-                          );
-                        },
+                                  MediaQuery.of(context).viewInsets.bottom),
+                          child: IncomeForm(),
+                        ),
                       );
                     },
                     child: const Icon(Icons.trending_up),
@@ -325,18 +311,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           borderRadius:
                               BorderRadius.vertical(top: Radius.circular(20)),
                         ),
-                        builder: (context) {
-                          return Padding(
-                            padding: EdgeInsets.only(
+                        builder: (context) => Padding(
+                          padding: EdgeInsets.only(
                               bottom:
-                                  MediaQuery.of(context).viewInsets.bottom,
-                              left: 20,
-                              right: 20,
-                              top: 20,
-                            ),
-                            child: ExpenseForm(),
-                          );
-                        },
+                                  MediaQuery.of(context).viewInsets.bottom),
+                          child:  ExpenseForm(),
+                        ),
                       );
                     },
                     child: const Icon(Icons.control_point),
@@ -382,6 +362,7 @@ class _MiniGoalCard extends StatelessWidget {
   final String title;
   final double saved;
   final double goal;
+
   const _MiniGoalCard({
     required this.icon,
     required this.iconColor,
@@ -402,16 +383,16 @@ class _MiniGoalCard extends StatelessWidget {
             CircleAvatar(
               backgroundColor: iconColor,
               radius: 18,
-              child: Icon(icon, color: Color(0xFF0e538f)),
+              child: Icon(icon, color: const Color(0xFF0e538f)),
             ),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title,
                       style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   Text(
                       "\$${saved.toStringAsFixed(2)} of \$${goal.toStringAsFixed(2)}",
                       style: TextStyle(color: Colors.grey[700], fontSize: 13)),
@@ -419,28 +400,29 @@ class _MiniGoalCard extends StatelessWidget {
               ),
             ),
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: Color(0xFF7bb7a6).withOpacity(0.7),
+                color: const Color(0xFF7bb7a6).withOpacity(0.7),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text('${(progress * 100).toStringAsFixed(0)}%',
-                  style: TextStyle(
+                  style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                       fontSize: 15)),
             ),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             Text('\$${missing.toStringAsFixed(2)} left',
                 style: TextStyle(color: Colors.grey[600], fontSize: 13)),
           ],
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         LinearProgressIndicator(
           value: progress,
           minHeight: 7,
-          backgroundColor: Color(0xFFe0f0fa),
-          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFbde3f6)),
+          backgroundColor: const Color(0xFFe0f0fa),
+          valueColor:
+              const AlwaysStoppedAnimation<Color>(Color(0xFFbde3f6)),
         ),
       ],
     );
