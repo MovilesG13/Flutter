@@ -1,14 +1,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'income_form.dart';
 import 'expense_form.dart';
 import 'savings_screen.dart';
-import 'savings_tabs.dart';
-import 'notes_screen.dart';
-
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -22,6 +22,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    final displayName = (user?.displayName != null && user!.displayName!.trim().isNotEmpty)
+        ? user.displayName!.trim()
+        : (user?.email?.split('@').first ?? 'User');
+    const monthNames = [
+      'January','February','March','April','May','June','July','August','September','October','November','December'
+    ];
+    final currentMonth = monthNames[DateTime.now().month - 1];
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: _selectedIndex == 0
@@ -39,16 +47,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("Welcome, Sofia",
-                          style: TextStyle(
+                      Text("Welcome, $displayName",
+                          style: const TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
                               color: Color(0xFF0e538f))),
                       const SizedBox(height: 5),
-                      const Text("Your balance for September is",
-                          style: TextStyle(fontSize: 16, color: Color(0xFF0e538f))),
+                      Text("Your balance for $currentMonth is",
+                          style: const TextStyle(fontSize: 16, color: Color(0xFF0e538f))),
                       const SizedBox(height: 5),
-                      Text("\$ ${values[2].toStringAsFixed(2)}",
+                      Text("\$${values[2].toStringAsFixed(2)}",
                           style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.w600,
@@ -185,11 +193,34 @@ class _HomeScreenState extends State<HomeScreen> {
           SavingsScreen(),
           // Reports Tab
           Center(child: Text('Reports', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF0e538f)))),
-          // notes
-          NotesScreen(),
           // Profile Tab
-          Center(child: Text('Profile', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF0e538f)))),
-          
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Profile', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF0e538f))),
+                const SizedBox(height: 16),
+                Builder(
+                  builder: (context) {
+                    final user = FirebaseAuth.instance.currentUser;
+                    return Column(
+                      children: [
+                        Text(user?.email ?? 'No email', style: const TextStyle(fontSize: 14)),
+                        const SizedBox(height: 12),
+                        ElevatedButton.icon(
+                          onPressed: () async {
+                            await FirebaseAuth.instance.signOut();
+                          },
+                          icon: const Icon(Icons.logout),
+                          label: const Text('Logout'),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
         ],
       ),
       floatingActionButton: _selectedIndex == 0
@@ -286,10 +317,6 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Reports',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.note_alt),
-            label: 'Notes',
-          ),
-           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Profile',
           ),
@@ -325,8 +352,8 @@ class _MiniGoalCard extends StatelessWidget {
           children: [
             CircleAvatar(
               backgroundColor: iconColor,
-              child: Icon(icon, color: Color(0xFF0e538f)),
               radius: 18,
+              child: Icon(icon, color: Color(0xFF0e538f)),
             ),
             SizedBox(width: 10),
             Expanded(
