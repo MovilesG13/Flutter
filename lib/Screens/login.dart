@@ -165,20 +165,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: OutlinedButton.icon(
                       icon: Image.asset('Images/LogoIcon2.png', height: 20),
                       onPressed: _loading ? null : () async {
-                        setState(() { _loading = true; _errorMessage = null; });
-                        try {
-                          final cred = await GoogleAuthService.signInWithGoogle();
-                          if (cred != null && mounted) {
-                            Navigator.of(context).maybePop();
-                          }
-                          if (cred == null) {
-                            setState(() { _errorMessage = 'Cancelado'; });
-                          }
-                        } catch (e) {
-                          setState(() { _errorMessage = 'Error Google'; });
-                        } finally {
-                          if (mounted) setState(() { _loading = false; });
-                        }
                       },
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),

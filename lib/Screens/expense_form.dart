@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/transaction_service.dart';
 
 class ExpenseForm extends StatefulWidget {
   @override
@@ -134,13 +135,27 @@ class ExpenseFormState extends State<ExpenseForm> {
                         ),
                         icon: const Icon(Icons.save, color: Color(0xFFfa2e38)),
                         label: const Text('Save Expense', style: TextStyle(fontSize: 16)),
-                        onPressed: () {
+                        onPressed: () async {
                           if (_formKey.currentState!.validate() && _selectedDate != null) {
-                            // Save the expense in your database or state
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Expense saved')),
-                            );
+                            final amount = double.parse(_amountController.text.trim());
+                            try {
+                              await TransactionService.instance.addExpense(
+                                amount: amount,
+                                category: _category!,
+                                description: _descController.text.trim().isEmpty ? null : _descController.text.trim(),
+                                date: _selectedDate!,
+                              );
+                              if (mounted) {
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Expense saved')),
+                                );
+                              }
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Error saving: $e')),
+                              );
+                            }
                           } else if (_selectedDate == null) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('Select a date')),

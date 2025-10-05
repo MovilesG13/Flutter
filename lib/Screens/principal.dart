@@ -5,6 +5,7 @@ import 'income_form.dart';
 import 'expense_form.dart';
 import 'savings_screen.dart';
 import 'notes_screen.dart'; // 👈 Import nuevo para Notes
+import '../services/transaction_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,7 +17,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   bool _showOptions = false;
-  final List<double> values = [2000, 1356.24, 643.76];
+  final List<double> values = [2000, 1356.24, 643.76]; // placeholder values
   final List<Color> barColors = [
     Color(0xFF06c951),
     Color(0xFFfa2e38),
@@ -92,6 +93,24 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 18),
+                // Example reactive total (optional later):
+                StreamBuilder(
+                  stream: TransactionService.instance.userMovementsStream(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) return const SizedBox.shrink();
+                    final movements = snapshot.data!;
+                    double income = 0;
+                    double expense = 0;
+                    for (final m in movements) {
+                      if (m.type == 'income') income += m.amount; else expense += m.amount;
+                    }
+                    final balance = income - expense;
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: Text('Current balance: ' + balance.toStringAsFixed(2), style: const TextStyle(fontWeight: FontWeight.bold)),
+                    );
+                  },
+                ),
                 const Text(
                   "Financial Overview",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
