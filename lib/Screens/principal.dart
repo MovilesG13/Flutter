@@ -1,10 +1,10 @@
-
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'income_form.dart';
 import 'expense_form.dart';
 import 'savings_screen.dart';
+import 'notes_screen.dart'; // 👈 Import nuevo para Notes
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,20 +14,35 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-
   int _selectedIndex = 0;
   bool _showOptions = false;
   final List<double> values = [2000, 1356.24, 643.76];
-  final List<Color> barColors = [Color(0xFF06c951), Color(0xFFfa2e38), Color(0xFF0e538f)];
+  final List<Color> barColors = [
+    Color(0xFF06c951),
+    Color(0xFFfa2e38),
+    Color(0xFF0e538f)
+  ];
 
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
-    final displayName = (user?.displayName != null && user!.displayName!.trim().isNotEmpty)
-        ? user.displayName!.trim()
-        : (user?.email?.split('@').first ?? 'User');
+    final displayName =
+        (user?.displayName != null && user!.displayName!.trim().isNotEmpty)
+            ? user.displayName!.trim()
+            : (user?.email?.split('@').first ?? 'User');
     const monthNames = [
-      'January','February','March','April','May','June','July','August','September','October','November','December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
     ];
     final currentMonth = monthNames[DateTime.now().month - 1];
     return Scaffold(
@@ -54,7 +69,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               color: Color(0xFF0e538f))),
                       const SizedBox(height: 5),
                       Text("Your balance for $currentMonth is",
-                          style: const TextStyle(fontSize: 16, color: Color(0xFF0e538f))),
+                          style: const TextStyle(
+                              fontSize: 16, color: Color(0xFF0e538f))),
                       const SizedBox(height: 5),
                       Text("\$${values[2].toStringAsFixed(2)}",
                           style: const TextStyle(
@@ -101,10 +117,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             interval: 500,
                           ),
                         ),
-                        rightTitles:
-                            const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        topTitles:
-                            const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        rightTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false)),
+                        topTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false)),
                         bottomTitles: AxisTitles(
                           sideTitles: SideTitles(
                             showTitles: true,
@@ -124,7 +140,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       borderData: FlBorderData(show: false),
-                      gridData: FlGridData(show: true, drawHorizontalLine: true),
+                      gridData:
+                          FlGridData(show: true, drawHorizontalLine: true),
                       barGroups: values.asMap().entries.map((entry) {
                         final index = entry.key;
                         final value = entry.value;
@@ -151,7 +168,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
-                    boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0,2))],
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 8,
+                          offset: Offset(0, 2))
+                    ],
                     border: Border.all(color: Color(0xFFe0e0e0)),
                   ),
                   child: Column(
@@ -161,11 +183,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           Icon(Icons.track_changes, color: Color(0xFF0e538f)),
                           SizedBox(width: 8),
-                          Text('Saving Goals', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                          Text('Saving Goals',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 18)),
                         ],
                       ),
                       SizedBox(height: 18),
-                      // Meta 1
                       _MiniGoalCard(
                         icon: Icons.phone_iphone,
                         iconColor: Color(0xFFbde3f6),
@@ -174,7 +197,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         goal: 1200,
                       ),
                       SizedBox(height: 18),
-                      // Meta 2
                       _MiniGoalCard(
                         icon: Icons.home,
                         iconColor: Color(0xFFbde3f6),
@@ -189,23 +211,39 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
+
           // Savings Tab
           SavingsScreen(),
+
           // Reports Tab
-          Center(child: Text('Reports', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF0e538f)))),
+          Center(
+              child: Text('Reports',
+                  style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF0e538f)))),
+
+          // Notes Tab 👇 nueva pantalla
+          NotesScreen(),
+
           // Profile Tab
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Profile', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF0e538f))),
+                Text('Profile',
+                    style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0e538f))),
                 const SizedBox(height: 16),
                 Builder(
                   builder: (context) {
                     final user = FirebaseAuth.instance.currentUser;
                     return Column(
                       children: [
-                        Text(user?.email ?? 'No email', style: const TextStyle(fontSize: 14)),
+                        Text(user?.email ?? 'No email',
+                            style: const TextStyle(fontSize: 14)),
                         const SizedBox(height: 12),
                         ElevatedButton.icon(
                           onPressed: () async {
@@ -237,12 +275,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         context: context,
                         isScrollControlled: true,
                         shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(20)),
                         ),
                         builder: (context) {
                           return Padding(
                             padding: EdgeInsets.only(
-                              bottom: MediaQuery.of(context).viewInsets.bottom,
+                              bottom:
+                                  MediaQuery.of(context).viewInsets.bottom,
                               left: 20,
                               right: 20,
                               top: 20,
@@ -263,12 +303,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         context: context,
                         isScrollControlled: true,
                         shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(20)),
                         ),
                         builder: (context) {
                           return Padding(
                             padding: EdgeInsets.only(
-                              bottom: MediaQuery.of(context).viewInsets.bottom,
+                              bottom:
+                                  MediaQuery.of(context).viewInsets.bottom,
                               left: 20,
                               right: 20,
                               top: 20,
@@ -304,29 +346,17 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         type: BottomNavigationBarType.fixed,
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.savings),
-            label: 'Savings',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart),
-            label: 'Reports',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.savings), label: 'Savings'),
+          BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Reports'),
+          BottomNavigationBarItem(icon: Icon(Icons.note_alt), label: 'Notes'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
     );
   }
 }
 
-// MiniGoalCard para mostrar metas de ahorro en la principal
 class _MiniGoalCard extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
@@ -360,8 +390,12 @@ class _MiniGoalCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  Text("\$${saved.toStringAsFixed(2)} of \$${goal.toStringAsFixed(2)}", style: TextStyle(color: Colors.grey[700], fontSize: 13)),
+                  Text(title,
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  Text(
+                      "\$${saved.toStringAsFixed(2)} of \$${goal.toStringAsFixed(2)}",
+                      style: TextStyle(color: Colors.grey[700], fontSize: 13)),
                 ],
               ),
             ),
@@ -371,10 +405,15 @@ class _MiniGoalCard extends StatelessWidget {
                 color: Color(0xFF7bb7a6).withOpacity(0.7),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text('${(progress*100).toStringAsFixed(0)}%', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 15)),
+              child: Text('${(progress * 100).toStringAsFixed(0)}%',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontSize: 15)),
             ),
             SizedBox(width: 10),
-            Text('\$${missing.toStringAsFixed(2)} left', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+            Text('\$${missing.toStringAsFixed(2)} left',
+                style: TextStyle(color: Colors.grey[600], fontSize: 13)),
           ],
         ),
         SizedBox(height: 8),
@@ -388,7 +427,3 @@ class _MiniGoalCard extends StatelessWidget {
     );
   }
 }
-
-
-
-
