@@ -226,6 +226,81 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 24),
+StreamBuilder<List<MoneyMovement>>(
+  stream: TransactionService.instance.userMovementsStream(),
+  builder: (context, snapshot) {
+    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+      return const Text(
+        'No expense data yet',
+        style: TextStyle(fontSize: 14, color: Colors.grey),
+      );
+    }
+
+    final expenses = snapshot.data!.where((m) => m.type == 'expense').toList();
+    if (expenses.isEmpty) {
+      return const Text(
+        'No expenses recorded',
+        style: TextStyle(fontSize: 14, color: Colors.grey),
+      );
+    }
+
+    final last5 = expenses.length > 5 ? expenses.sublist(expenses.length - 5) : expenses;
+    final recentExpenses = last5.fold(0.0, (sum, m) => sum + m.amount);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 2))
+        ],
+      ),
+      child: Text(
+        'Como últimas 5 compras gastaste \$${recentExpenses.toStringAsFixed(2)}',
+        style: const TextStyle(
+            fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF0e538f)),
+      ),
+    );
+  },
+),
+const SizedBox(height: 8),
+StreamBuilder<List<MoneyMovement>>(
+  stream: TransactionService.instance.userMovementsStream(),
+  builder: (context, snapshot) {
+    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final expenses = snapshot.data!.where((m) => m.type == 'expense').toList();
+    if (expenses.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final last5 = expenses.length > 5 ? expenses.sublist(expenses.length - 5) : expenses;
+    final recentExpenses = last5.fold(0.0, (sum, m) => sum + m.amount);
+    final totalExpenses = expenses.fold(0.0, (sum, m) => sum + m.amount);
+    final percent = totalExpenses == 0 ? 0 : (recentExpenses / totalExpenses) * 100;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 2))
+        ],
+      ),
+      child: Text(
+        'Esto representa el ${percent.toStringAsFixed(0)}% de tus gastos totales',
+        style: const TextStyle(
+            fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF0e538f)),
+      ),
+    );
+  },
+),
+
                 ],
               ),
             ),
