@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/services.dart';
 import 'savings_tabs.dart';
 import '../services/savings_goal_service.dart';
+import '../services/connectivity_service.dart';
 
 class SavingsScreen extends StatefulWidget {
   const SavingsScreen({super.key});
@@ -89,7 +90,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                 Navigator.pop(context);
               } catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Error: ${e.toString()}')),
+                  SnackBar(content: Text('Error saving goal: ${e.toString()}')),
                 );
               }
             },
@@ -132,6 +133,30 @@ class _SavingsScreenState extends State<SavingsScreen> {
             return SingleChildScrollView(
               child: Column(
                 children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
+                    child: StreamBuilder<bool>(
+                      stream: ConnectivityService.instance.isOnlineStream,
+                      initialData: ConnectivityService.instance.isOnline,
+                      builder: (context, snap) {
+                        final online = snap.data ?? true;
+                        if (online) return SizedBox.shrink();
+                        return Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF3CD),
+                            border: Border.all(color: const Color(0xFFFFEEBA)),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Text(
+                            'You are offline. Changes will sync when connection is restored.',
+                            style: TextStyle(color: Color(0xFF856404)),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                   // Header
                   Container(
                     width: double.infinity,

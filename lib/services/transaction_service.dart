@@ -111,7 +111,7 @@ class TransactionService {
   Stream<List<MoneyMovement>> userMovementsStream() {
     final uid = _auth.currentUser!.uid;
     return _userMovementsCol(uid)
-        .orderBy('date', descending: true)
+        .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snap) => snap.docs.map(MoneyMovement.fromDoc).toList());
   }

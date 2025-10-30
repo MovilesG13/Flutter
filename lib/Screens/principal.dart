@@ -7,6 +7,7 @@ import 'savings_screen.dart';
 import 'notes_screen.dart';
 import '../services/transaction_service.dart';
 import '../services/savings_goal_service.dart';
+import '../services/connectivity_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -117,6 +118,28 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  StreamBuilder<bool>(
+                    stream: ConnectivityService.instance.isOnlineStream,
+                    initialData: ConnectivityService.instance.isOnline,
+                    builder: (context, snapshot) {
+                      final online = snapshot.data ?? true;
+                      if (online) return const SizedBox.shrink();
+                      return Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF3CD),
+                          border: Border.all(color: const Color(0xFFFFEEBA)),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          'You are offline. Changes will sync when connection is restored.',
+                          style: TextStyle(color: Color(0xFF856404)),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 12),
                   const SizedBox(height: 20),
                   SizedBox(
                     height: 300,

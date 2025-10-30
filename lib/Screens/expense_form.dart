@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/transaction_service.dart';
+import '../services/connectivity_service.dart';
+import '../services/offline_queue_service.dart';
 
 class ExpenseForm extends StatefulWidget {
   @override
@@ -23,6 +25,28 @@ class ExpenseFormState extends State<ExpenseForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          StreamBuilder<bool>(
+            stream: ConnectivityService.instance.isOnlineStream,
+            initialData: ConnectivityService.instance.isOnline,
+            builder: (context, snapshot) {
+              final online = snapshot.data ?? true;
+              if (online) return const SizedBox.shrink();
+              return Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(8),
+                margin: const EdgeInsets.only(top: 8, bottom: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF3CD),
+                  border: Border.all(color: const Color(0xFFFFEEBA)),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text(
+                  'You are offline. This expense will be saved locally and synced later.',
+                  style: TextStyle(color: Color(0xFF856404), fontSize: 12),
+                ),
+              );
+            },
+          ),
           // Header
           Container(
             width: double.infinity,
@@ -152,9 +176,20 @@ class ExpenseFormState extends State<ExpenseForm> {
                                 );
                               }
                             } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Error saving: $e')),
+                              // Fallback: enqueue if Firestore fails
+                              await OfflineQueueService.instance.enqueueMovement(
+                                type: 'expense',
+                                amount: amount,
+                                category: _category!,
+                                description: _descController.text.trim().isEmpty ? null : _descController.text.trim(),
+                                date: _selectedDate!,
                               );
+                              if (mounted) {
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Temporary error. Expense saved locally and will sync later.')),
+                                );
+                              }
                             }
                           } else if (_selectedDate == null) {
                             ScaffoldMessenger.of(context).showSnackBar(

@@ -3,6 +3,7 @@ import 'auth/auth_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'services/connectivity_service.dart';
 
 
 Future<void> main() async {
@@ -10,6 +11,9 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  // ConnectivityService initializes itself on first access.
+  // Ensures instance is created early.
+  ConnectivityService.instance;
   runApp(const MyApp());
 }
 
