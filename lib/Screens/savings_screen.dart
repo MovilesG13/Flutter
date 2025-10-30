@@ -21,14 +21,14 @@ class _SavingsScreenState extends State<SavingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(existingGoal == null ? 'Nueva Meta de Ahorro' : 'Editar Meta'),
+        title: Text(existingGoal == null ? 'New Savings Goal' : 'Edit Goal'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: nameController,
               decoration: InputDecoration(
-                labelText: 'Nombre de la meta',
+                labelText: 'Goal name',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -36,7 +36,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
             TextField(
               controller: amountController,
               decoration: InputDecoration(
-                labelText: 'Cantidad objetivo',
+                labelText: 'Target amount',
                 prefixText: '\$',
                 border: OutlineInputBorder(),
               ),
@@ -48,7 +48,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancelar'),
+            child: Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -57,7 +57,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
               
               if (name.isEmpty || amountStr.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Por favor completa todos los campos')),
+                  SnackBar(content: Text('Please complete all fields')),
                 );
                 return;
               }
@@ -65,7 +65,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
               final amount = double.tryParse(amountStr);
               if (amount == null || amount <= 0) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Por favor ingresa una cantidad válida')),
+                  SnackBar(content: Text('Please enter a valid amount')),
                 );
                 return;
               }
@@ -74,7 +74,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                 if (existingGoal == null) {
                   await _goalService.addGoal(name: name, targetAmount: amount);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Meta añadida exitosamente')),
+                    SnackBar(content: Text('Goal added successfully')),
                   );
                 } else {
                   await _goalService.updateGoal(
@@ -83,7 +83,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                     targetAmount: amount,
                   );
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Meta actualizada exitosamente')),
+                    SnackBar(content: Text('Goal updated successfully')),
                   );
                 }
                 Navigator.pop(context);
@@ -93,7 +93,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                 );
               }
             },
-            child: Text(existingGoal == null ? 'Añadir' : 'Guardar'),
+            child: Text(existingGoal == null ? 'Add' : 'Save'),
           ),
         ],
       ),

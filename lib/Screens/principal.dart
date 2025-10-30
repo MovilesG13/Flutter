@@ -234,7 +234,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               return const Padding(
                                 padding: EdgeInsets.symmetric(vertical: 8),
                                 child: Text(
-                                  'No tienes metas aún. Crea una en Savings.',
+                                  'You have no goals yet. Create one in Savings.',
                                   style: TextStyle(fontSize: 14, color: Colors.grey),
                                 ),
                               );
@@ -274,7 +274,7 @@ StreamBuilder<List<MoneyMovement>>(
     final Map<String, double> incomeByCategory = {};
 
     for (final m in movements) {
-      final cat = (m.category ?? 'Sin categoría').trim();
+      final cat = (m.category ?? 'Uncategorized').trim();
       if (m.type == 'expense') {
         expenseByCategory[cat] = (expenseByCategory[cat] ?? 0) + m.amount;
       } else if (m.type == 'income') {
@@ -334,26 +334,26 @@ StreamBuilder<List<MoneyMovement>>(
           const SizedBox(height: 12),
           if (topExpenseAmt > 0) ...[
             Text(
-              'La categoría en la que más has gastado es "$topExpenseCat" (\$${topExpenseAmt.toStringAsFixed(2)}).',
+              'Your highest spending category is "$topExpenseCat" (\$${topExpenseAmt.toStringAsFixed(2)}).',
               style: const TextStyle(fontSize: 14, color: Color(0xFFfa2e38), fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
           ],
           if (topIncomeAmt > 0) ...[
             Text(
-              'La categoría de mayor ingreso es "$topIncomeCat" (\$${topIncomeAmt.toStringAsFixed(2)}).',
+              'Your highest income category is "$topIncomeCat" (\$${topIncomeAmt.toStringAsFixed(2)}).',
               style: const TextStyle(fontSize: 14, color: Color(0xFF06c951), fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
           ],
           if (expenses.isNotEmpty) ...[
             Text(
-              'En las últimas 5 transacciones te gastaste \$${recentExpenses.toStringAsFixed(2)}.',
+              'In your last 5 expense transactions you spent \$${recentExpenses.toStringAsFixed(2)}.',
               style: const TextStyle(fontSize: 14, color: Color(0xFF0e538f), fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             Text(
-              'Esto representa el ${percent.toStringAsFixed(0)}% de tus gastos totales.',
+              'This represents ${percent.toStringAsFixed(0)}% of your total expenses.',
               style: const TextStyle(fontSize: 14, color: Color(0xFF0e538f), fontWeight: FontWeight.w600),
             ),
           ],

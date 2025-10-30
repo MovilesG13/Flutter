@@ -54,16 +54,16 @@ class _SavingsTabsState extends State<SavingsTabs> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Añadir Dinero'),
+        title: Text('Add Money'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Meta: ${goal.name}'),
+            Text('Goal: ${goal.name}'),
             SizedBox(height: 16),
             TextField(
               controller: amountController,
               decoration: InputDecoration(
-                labelText: 'Cantidad a añadir',
+                labelText: 'Amount to add',
                 prefixText: '\$',
                 border: OutlineInputBorder(),
               ),
@@ -75,7 +75,7 @@ class _SavingsTabsState extends State<SavingsTabs> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancelar'),
+            child: Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -84,7 +84,7 @@ class _SavingsTabsState extends State<SavingsTabs> {
               
               if (amount == null || amount <= 0) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Por favor ingresa una cantidad válida')),
+                  SnackBar(content: Text('Please enter a valid amount')),
                 );
                 return;
               }
@@ -93,7 +93,7 @@ class _SavingsTabsState extends State<SavingsTabs> {
                 await _goalService.addMoneyToGoal(goal.id, amount);
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Dinero añadido exitosamente')),
+                  SnackBar(content: Text('Money added successfully')),
                 );
               } catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -101,7 +101,7 @@ class _SavingsTabsState extends State<SavingsTabs> {
                 );
               }
             },
-            child: Text('Añadir'),
+            child: Text('Add'),
           ),
         ],
       ),
@@ -112,12 +112,12 @@ class _SavingsTabsState extends State<SavingsTabs> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Confirmar Eliminación'),
-        content: Text('¿Estás seguro de que deseas eliminar la meta "${goal.name}"?'),
+        title: Text('Confirm Deletion'),
+        content: Text('Are you sure you want to delete the goal "${goal.name}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancelar'),
+            child: Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -125,7 +125,7 @@ class _SavingsTabsState extends State<SavingsTabs> {
                 await _goalService.deleteGoal(goal.id);
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Meta eliminada exitosamente')),
+                  SnackBar(content: Text('Goal deleted successfully')),
                 );
               } catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -134,7 +134,7 @@ class _SavingsTabsState extends State<SavingsTabs> {
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: Text('Eliminar', style: TextStyle(color: Colors.white)),
+            child: Text('Delete', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -283,12 +283,12 @@ class _SavingsTabsState extends State<SavingsTabs> {
                     Icon(Icons.track_changes, size: 64, color: Colors.grey[400]),
                     SizedBox(height: 16),
                     Text(
-                      'No tienes metas de ahorro aún',
+                      'You have no savings goals yet',
                       style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                     ),
                     SizedBox(height: 8),
                     Text(
-                      'Presiona el botón + para añadir una nueva meta',
+                      'Press the + button to add a new goal',
                       style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                       textAlign: TextAlign.center,
                     ),
@@ -321,12 +321,12 @@ class _SavingsTabsState extends State<SavingsTabs> {
                     Icon(Icons.trending_up, size: 64, color: Colors.grey[400]),
                     SizedBox(height: 16),
                     Text(
-                      'No hay progreso para mostrar',
+                      'No progress to show',
                       style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                     ),
                     SizedBox(height: 8),
                     Text(
-                      'Añade metas y dinero para ver tu progreso',
+                      'Add goals and money to see your progress',
                       style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                       textAlign: TextAlign.center,
                     ),
