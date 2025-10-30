@@ -6,6 +6,7 @@ import 'expense_form.dart';
 import 'savings_screen.dart';
 import 'notes_screen.dart';
 import '../services/transaction_service.dart';
+import '../services/savings_goal_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,7 +18,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   bool _showOptions = false;
-  final List<double> values = [2000, 1356.24, 643.76];
   final List<Color> barColors = [
     const Color(0xFF06c951),
     const Color(0xFFfa2e38),
@@ -120,65 +120,83 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 20),
                   SizedBox(
                     height: 300,
-                    child: BarChart(
-                      BarChartData(
-                        alignment: BarChartAlignment.spaceAround,
-                        barTouchData: BarTouchData(enabled: true),
-                        titlesData: FlTitlesData(
-                          leftTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              reservedSize: 50,
-                              getTitlesWidget: (value, meta) {
-                                return Text(
-                                  "\$${value.toInt()}",
-                                  style: const TextStyle(fontSize: 10),
-                                );
-                              },
-                              interval: 500,
-                            ),
-                          ),
-                          rightTitles: const AxisTitles(
-                              sideTitles: SideTitles(showTitles: false)),
-                          topTitles: const AxisTitles(
-                              sideTitles: SideTitles(showTitles: false)),
-                          bottomTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              getTitlesWidget: (value, meta) {
-                                switch (value.toInt()) {
-                                  case 0:
-                                    return const Text("Income");
-                                  case 1:
-                                    return const Text("Expenses");
-                                  case 2:
-                                    return const Text("Balance");
-                                  default:
-                                    return const Text("");
-                                }
-                              },
-                            ),
-                          ),
-                        ),
-                        borderData: FlBorderData(show: false),
-                        gridData:
-                            FlGridData(show: true, drawHorizontalLine: true),
-                        barGroups: values.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final value = entry.value;
-                          return BarChartGroupData(
-                            x: index,
-                            barRods: [
-                              BarChartRodData(
-                                toY: value,
-                                color: barColors[index],
-                                width: 30,
-                                borderRadius: BorderRadius.circular(6),
+                    child: StreamBuilder<List<MoneyMovement>>(
+                      stream: TransactionService.instance.userMovementsStream(),
+                      builder: (context, snapshot) {
+                        double income = 0;
+                        double expense = 0;
+                        if (snapshot.hasData) {
+                          for (final m in snapshot.data!) {
+                            if (m.type == 'income') {
+                              income += m.amount;
+                            } else {
+                              expense += m.amount;
+                            }
+                          }
+                        }
+                        final balance = income - expense;
+                        final values = [income, expense, balance];
+
+                        return BarChart(
+                          BarChartData(
+                            alignment: BarChartAlignment.spaceAround,
+                            barTouchData: BarTouchData(enabled: true),
+                            titlesData: FlTitlesData(
+                              leftTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  reservedSize: 50,
+                                  getTitlesWidget: (value, meta) {
+                                    return Text(
+                                      "\$${value.toInt()}",
+                                      style: const TextStyle(fontSize: 10),
+                                    );
+                                  },
+                                  interval: 500,
+                                ),
                               ),
-                            ],
-                          );
-                        }).toList(),
-                      ),
+                              rightTitles: const AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false)),
+                              topTitles: const AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false)),
+                              bottomTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  getTitlesWidget: (value, meta) {
+                                    switch (value.toInt()) {
+                                      case 0:
+                                        return const Text("Income");
+                                      case 1:
+                                        return const Text("Expenses");
+                                      case 2:
+                                        return const Text("Balance");
+                                      default:
+                                        return const Text("");
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+                            borderData: FlBorderData(show: false),
+                            gridData: FlGridData(show: true, drawHorizontalLine: true),
+                            barGroups: values.asMap().entries.map((entry) {
+                              final index = entry.key;
+                              final value = entry.value;
+                              return BarChartGroupData(
+                                x: index,
+                                barRods: [
+                                  BarChartRodData(
+                                    toY: value,
+                                    color: barColors[index],
+                                    width: 30,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                ],
+                              );
+                            }).toList(),
+                          ),
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -197,8 +215,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Row(
+                      children: [
+                        const Row(
                           children: [
                             Icon(Icons.track_changes, color: Color(0xFF0e538f)),
                             SizedBox(width: 8),
@@ -207,81 +225,91 @@ class _HomeScreenState extends State<HomeScreen> {
                                     fontWeight: FontWeight.bold, fontSize: 18)),
                           ],
                         ),
-                        SizedBox(height: 18),
-                        _MiniGoalCard(
-                          icon: Icons.phone_iphone,
-                          iconColor: Color(0xFFbde3f6),
-                          title: 'New Phone',
-                          saved: 650,
-                          goal: 1200,
-                        ),
-                        SizedBox(height: 18),
-                        _MiniGoalCard(
-                          icon: Icons.home,
-                          iconColor: Color(0xFFbde3f6),
-                          title: 'New House',
-                          saved: 12500,
-                          goal: 50000,
+                        const SizedBox(height: 18),
+                        StreamBuilder<List<SavingsGoal>>(
+                          stream: SavingsGoalService.instance.userGoalsStream(),
+                          builder: (context, snapshot) {
+                            final goals = snapshot.data ?? [];
+                            if (goals.isEmpty) {
+                              return const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8),
+                                child: Text(
+                                  'No tienes metas aún. Crea una en Savings.',
+                                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                                ),
+                              );
+                            }
+                            return Column(
+                              children: goals.take(3).map((g) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 18),
+                                  child: _MiniGoalCard(
+                                    icon: Icons.savings,
+                                    iconColor: const Color(0xFFbde3f6),
+                                    title: g.name,
+                                    saved: g.currentAmount,
+                                    goal: g.targetAmount,
+                                  ),
+                                );
+                              }).toList(),
+                            );
+                          },
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 24),
+// Insights: Todo en un solo bloque
 StreamBuilder<List<MoneyMovement>>(
   stream: TransactionService.instance.userMovementsStream(),
   builder: (context, snapshot) {
-    if (!snapshot.hasData || snapshot.data!.isEmpty) {
-      return const Text(
-        'No expense data yet',
-        style: TextStyle(fontSize: 14, color: Colors.grey),
-      );
-    }
-
-    final expenses = snapshot.data!.where((m) => m.type == 'expense').toList();
-    if (expenses.isEmpty) {
-      return const Text(
-        'No expenses recorded',
-        style: TextStyle(fontSize: 14, color: Colors.grey),
-      );
-    }
-
-    final last5 = expenses.length > 5 ? expenses.sublist(expenses.length - 5) : expenses;
-    final recentExpenses = last5.fold(0.0, (sum, m) => sum + m.amount);
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 2))
-        ],
-      ),
-      child: Text(
-        'Como últimas 5 compras gastaste \$${recentExpenses.toStringAsFixed(2)}',
-        style: const TextStyle(
-            fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF0e538f)),
-      ),
-    );
-  },
-),
-const SizedBox(height: 8),
-StreamBuilder<List<MoneyMovement>>(
-  stream: TransactionService.instance.userMovementsStream(),
-  builder: (context, snapshot) {
-    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+    final movements = snapshot.data ?? [];
+    if (movements.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    final expenses = snapshot.data!.where((m) => m.type == 'expense').toList();
-    if (expenses.isEmpty) {
-      return const SizedBox.shrink();
+    // Calcular gastos por categoría
+    final expenses = movements.where((m) => m.type == 'expense').toList();
+    final Map<String, double> expenseByCategory = {};
+    final Map<String, double> incomeByCategory = {};
+
+    for (final m in movements) {
+      final cat = (m.category ?? 'Sin categoría').trim();
+      if (m.type == 'expense') {
+        expenseByCategory[cat] = (expenseByCategory[cat] ?? 0) + m.amount;
+      } else if (m.type == 'income') {
+        incomeByCategory[cat] = (incomeByCategory[cat] ?? 0) + m.amount;
+      }
     }
 
+    String topExpenseCat = 'N/A';
+    double topExpenseAmt = 0;
+    expenseByCategory.forEach((k, v) {
+      if (v > topExpenseAmt) {
+        topExpenseAmt = v;
+        topExpenseCat = k;
+      }
+    });
+
+    String topIncomeCat = 'N/A';
+    double topIncomeAmt = 0;
+    incomeByCategory.forEach((k, v) {
+      if (v > topIncomeAmt) {
+        topIncomeAmt = v;
+        topIncomeCat = k;
+      }
+    });
+
+    // Calcular últimas 5 transacciones de gastos
     final last5 = expenses.length > 5 ? expenses.sublist(expenses.length - 5) : expenses;
     final recentExpenses = last5.fold(0.0, (sum, m) => sum + m.amount);
     final totalExpenses = expenses.fold(0.0, (sum, m) => sum + m.amount);
-    final percent = totalExpenses == 0 ? 0 : (recentExpenses / totalExpenses) * 100;
+    final percent = totalExpenses > 0 ? (recentExpenses / totalExpenses) * 100 : 0;
+
+    final hasData = topExpenseAmt > 0 || topIncomeAmt > 0 || expenses.isNotEmpty;
+    if (!hasData) {
+      return const SizedBox.shrink();
+    }
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -292,10 +320,44 @@ StreamBuilder<List<MoneyMovement>>(
           BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 2))
         ],
       ),
-      child: Text(
-        'Esto representa el ${percent.toStringAsFixed(0)}% de tus gastos totales',
-        style: const TextStyle(
-            fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF0e538f)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: const [
+              Icon(Icons.lightbulb, color: Color(0xFF0e538f)),
+              SizedBox(width: 8),
+              Text('Smart Insights',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (topExpenseAmt > 0) ...[
+            Text(
+              'La categoría en la que más has gastado es "$topExpenseCat" (\$${topExpenseAmt.toStringAsFixed(2)}).',
+              style: const TextStyle(fontSize: 14, color: Color(0xFFfa2e38), fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+          ],
+          if (topIncomeAmt > 0) ...[
+            Text(
+              'La categoría de mayor ingreso es "$topIncomeCat" (\$${topIncomeAmt.toStringAsFixed(2)}).',
+              style: const TextStyle(fontSize: 14, color: Color(0xFF06c951), fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+          ],
+          if (expenses.isNotEmpty) ...[
+            Text(
+              'En las últimas 5 transacciones te gastaste \$${recentExpenses.toStringAsFixed(2)}.',
+              style: const TextStyle(fontSize: 14, color: Color(0xFF0e538f), fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Esto representa el ${percent.toStringAsFixed(0)}% de tus gastos totales.',
+              style: const TextStyle(fontSize: 14, color: Color(0xFF0e538f), fontWeight: FontWeight.w600),
+            ),
+          ],
+        ],
       ),
     );
   },
@@ -448,8 +510,8 @@ class _MiniGoalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final progress = saved / goal;
-    final missing = goal - saved;
+    final progress = goal > 0 ? (saved / goal).clamp(0.0, 1.0) : 0.0;
+    final missing = (goal - saved).clamp(0.0, double.infinity);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

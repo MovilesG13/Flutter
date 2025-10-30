@@ -1,6 +1,8 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../services/savings_goal_service.dart';
 
 class _InfoCard extends StatelessWidget {
   final IconData icon;
@@ -33,7 +35,10 @@ class _InfoCard extends StatelessWidget {
 }
 
 class SavingsTabs extends StatefulWidget {
-  const SavingsTabs({super.key});
+  final List<SavingsGoal> goals;
+  final Function(SavingsGoal) onEditGoal;
+  
+  const SavingsTabs({super.key, required this.goals, required this.onEditGoal});
 
   @override
   State<SavingsTabs> createState() => _SavingsTabsState();
@@ -41,9 +46,117 @@ class SavingsTabs extends StatefulWidget {
 
 class _SavingsTabsState extends State<SavingsTabs> {
   int selectedTab = 1; // 0: Summary, 1: My Goals, 2: Progress
+  final _goalService = SavingsGoalService.instance;
+
+  void _showAddMoneyDialog(SavingsGoal goal) {
+    final amountController = TextEditingController();
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Añadir Dinero'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Meta: ${goal.name}'),
+            SizedBox(height: 16),
+            TextField(
+              controller: amountController,
+              decoration: InputDecoration(
+                labelText: 'Cantidad a añadir',
+                prefixText: '\$',
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final amountStr = amountController.text.trim();
+              final amount = double.tryParse(amountStr);
+              
+              if (amount == null || amount <= 0) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Por favor ingresa una cantidad válida')),
+                );
+                return;
+              }
+              
+              try {
+                await _goalService.addMoneyToGoal(goal.id, amount);
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Dinero añadido exitosamente')),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error: ${e.toString()}')),
+                );
+              }
+            },
+            child: Text('Añadir'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation(SavingsGoal goal) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Confirmar Eliminación'),
+        content: Text('¿Estás seguro de que deseas eliminar la meta "${goal.name}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              try {
+                await _goalService.deleteGoal(goal.id);
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Meta eliminada exitosamente')),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error: ${e.toString()}')),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: Text('Eliminar', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final goals = widget.goals;
+    final totalSaved = goals.fold<double>(0.0, (sum, goal) => sum + goal.currentAmount);
+    final totalTarget = goals.fold<double>(0.0, (sum, goal) => sum + goal.targetAmount);
+    final activeGoals = goals.length;
+    
+    // Calcular ahorro mensual estimado (promedio de las metas que tienen progreso)
+    final goalsWithProgress = goals.where((g) => g.currentAmount > 0).toList();
+    final monthlySavings = goalsWithProgress.isNotEmpty
+        ? goalsWithProgress.map((g) {
+            final monthsSinceStart = (DateTime.now().difference(g.createdAt).inDays / 30.0).clamp(1.0, double.infinity);
+            return g.currentAmount / monthsSinceStart;
+          }).fold(0.0, (sum, val) => sum + val) / goalsWithProgress.length
+        : 0.0;
+
     return Column(
       children: [
         Container(
@@ -64,13 +177,13 @@ class _SavingsTabsState extends State<SavingsTabs> {
               _InfoCard(
                 icon: Icons.track_changes,
                 title: 'Active Goals',
-                value: '2',
+                value: '$activeGoals',
                 color: Colors.blue,
               ),
               _InfoCard(
                 icon: Icons.trending_up,
                 title: 'Monthly Savings',
-                value: "\$900",
+                value: monthlySavings > 0 ? "\$${monthlySavings.toStringAsFixed(0)}" : "\$0",
                 color: Colors.green,
               ),
             ],
@@ -108,22 +221,32 @@ class _SavingsTabsState extends State<SavingsTabs> {
                         children: [
                           PieChart(
                             PieChartData(
-                              sections: [
-                                PieChartSectionData(
-                                  value: 13150,
-                                  color: Color(0xFF06c951),
-                                  radius: 70,
-                                  title: '',
-                                  showTitle: false,
-                                ),
-                                PieChartSectionData(
-                                  value: 51200-13150,
-                                  color: Color(0xFFe0e0e0),
-                                  radius: 70,
-                                  title: '',
-                                  showTitle: false,
-                                ),
-                              ],
+                              sections: totalTarget > 0
+                                  ? [
+                                      PieChartSectionData(
+                                        value: totalSaved,
+                                        color: Color(0xFF06c951),
+                                        radius: 70,
+                                        title: '',
+                                        showTitle: false,
+                                      ),
+                                      PieChartSectionData(
+                                        value: totalTarget - totalSaved,
+                                        color: Color(0xFFe0e0e0),
+                                        radius: 70,
+                                        title: '',
+                                        showTitle: false,
+                                      ),
+                                    ]
+                                  : [
+                                      PieChartSectionData(
+                                        value: 1,
+                                        color: Color(0xFFe0e0e0),
+                                        radius: 70,
+                                        title: '',
+                                        showTitle: false,
+                                      ),
+                                    ],
                               centerSpaceRadius: 55,
                               sectionsSpace: 0,
                             ),
@@ -131,7 +254,10 @@ class _SavingsTabsState extends State<SavingsTabs> {
                           Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text("\$13,150", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF06c951))),
+                              Text(
+                                "\$${totalSaved.toStringAsFixed(0)}",
+                                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF06c951)),
+                              ),
                               SizedBox(height: 2),
                               Text("Saved", style: TextStyle(fontSize: 14, color: Colors.grey[700])),
                             ],
@@ -148,29 +274,79 @@ class _SavingsTabsState extends State<SavingsTabs> {
         ],
         if (selectedTab == 1) ...[
           SizedBox(height: 18),
-          _GoalCard(
-            icon: Icons.phone_iphone,
-            iconColor: Color(0xFFbde3f6),
-            title: 'New Phone',
-            goal: 1200,
-            progress: 0.54,
-            saved: 650,
-            amoung_left: 550,
-            monthly: 100,
-            months: 6,
-          ),
+          if (goals.isEmpty)
+            Padding(
+              padding: EdgeInsets.all(32),
+              child: Center(
+                child: Column(
+                  children: [
+                    Icon(Icons.track_changes, size: 64, color: Colors.grey[400]),
+                    SizedBox(height: 16),
+                    Text(
+                      'No tienes metas de ahorro aún',
+                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Presiona el botón + para añadir una nueva meta',
+                      style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ...goals.map((goal) => Column(
+                children: [
+                  _GoalCard(
+                    goal: goal,
+                    icon: Icons.savings,
+                    iconColor: Color(0xFFbde3f6),
+                    onEdit: () => widget.onEditGoal(goal),
+                    onDelete: () => _showDeleteConfirmation(goal),
+                    onAddMoney: () => _showAddMoneyDialog(goal),
+                  ),
+                  SizedBox(height: 18),
+                ],
+              )),
+        ],
+        if (selectedTab == 2) ...[
           SizedBox(height: 18),
-          _GoalCard(
-            icon: Icons.home,
-            iconColor: Color(0xFFbde3f6),
-            title: 'New House',
-            goal: 50000,
-            progress: 0.12,
-            saved: 6000,
-            amoung_left: 44000,
-            monthly: 1200,
-            months: 37,
-          ),
+          if (goals.isEmpty)
+            Padding(
+              padding: EdgeInsets.all(32),
+              child: Center(
+                child: Column(
+                  children: [
+                    Icon(Icons.trending_up, size: 64, color: Colors.grey[400]),
+                    SizedBox(height: 16),
+                    Text(
+                      'No hay progreso para mostrar',
+                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Añade metas y dinero para ver tu progreso',
+                      style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ...goals.map((goal) => Column(
+                children: [
+                  _GoalCard(
+                    goal: goal,
+                    icon: Icons.savings,
+                    iconColor: Color(0xFFbde3f6),
+                    onEdit: () => widget.onEditGoal(goal),
+                    onDelete: () => _showDeleteConfirmation(goal),
+                    onAddMoney: () => _showAddMoneyDialog(goal),
+                  ),
+                  SizedBox(height: 18),
+                ],
+              )),
         ]
       ],
     );
@@ -214,29 +390,36 @@ class _TabButton extends StatelessWidget {
 }
 
 class _GoalCard extends StatelessWidget {
+  final SavingsGoal goal;
   final IconData icon;
   final Color iconColor;
-  final String title;
-  final double goal;
-  final double progress;
-  final double saved;
-  final double amoung_left;
-  final double monthly;
-  final int months;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+  final VoidCallback onAddMoney;
+
   const _GoalCard({
+    required this.goal,
     required this.icon,
     required this.iconColor,
-    required this.title,
-    required this.goal,
-    required this.progress,
-    required this.saved,
-    required this.amoung_left,
-    required this.monthly,
-    required this.months,
+    required this.onEdit,
+    required this.onDelete,
+    required this.onAddMoney,
   });
 
   @override
   Widget build(BuildContext context) {
+    final progress = goal.progress.clamp(0.0, 1.0);
+    final remaining = goal.remaining;
+    
+    // Calcular ahorro mensual estimado
+    final monthsSinceStart = (DateTime.now().difference(goal.createdAt).inDays / 30.0).clamp(1.0, double.infinity);
+    final monthlySavings = goal.currentAmount / monthsSinceStart;
+    
+    // Estimar meses restantes
+    final estimatedMonths = monthlySavings > 0 
+        ? (remaining / monthlySavings).ceil() 
+        : 0;
+
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 12),
       padding: EdgeInsets.all(18),
@@ -261,22 +444,32 @@ class _GoalCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                    Text('Goal: \$${goal.toStringAsFixed(0)}', style: TextStyle(color: Colors.grey[700], fontSize: 14)),
+                    Text(goal.name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                    Text('Goal: \$${goal.targetAmount.toStringAsFixed(2)}', style: TextStyle(color: Colors.grey[700], fontSize: 14)),
                   ],
                 ),
               ),
-              Icon(Icons.edit, color: Colors.grey[500]),
+              IconButton(
+                icon: Icon(Icons.edit, color: Colors.grey[500]),
+                onPressed: onEdit,
+                padding: EdgeInsets.zero,
+                constraints: BoxConstraints(),
+              ),
               SizedBox(width: 8),
-              Icon(Icons.delete, color: Colors.grey[500]),
+              IconButton(
+                icon: Icon(Icons.delete, color: Colors.grey[500]),
+                onPressed: onDelete,
+                padding: EdgeInsets.zero,
+                constraints: BoxConstraints(),
+              ),
             ],
           ),
           SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Progress: ${(progress*100).toStringAsFixed(0)}%', style: TextStyle(fontWeight: FontWeight.w500)),
-              Text('\$${saved.toStringAsFixed(0)}', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('Progress: ${(progress * 100).toStringAsFixed(0)}%', style: TextStyle(fontWeight: FontWeight.w500)),
+              Text('\$${goal.currentAmount.toStringAsFixed(2)}', style: TextStyle(fontWeight: FontWeight.bold)),
             ],
           ),
           SizedBox(height: 6),
@@ -293,19 +486,22 @@ class _GoalCard extends StatelessWidget {
               Column(
                 children: [
                   Text('Left', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
-                  Text('\$${amoung_left.toStringAsFixed(0)}', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text('\$${remaining.toStringAsFixed(2)}', style: TextStyle(fontWeight: FontWeight.bold)),
                 ],
               ),
               Column(
                 children: [
                   Text('Monthly', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
-                  Text('\$${monthly.toStringAsFixed(0)}', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text('\$${monthlySavings.toStringAsFixed(0)}', style: TextStyle(fontWeight: FontWeight.bold)),
                 ],
               ),
               Column(
                 children: [
                   Text('Est. Time', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
-                  Text('$months months', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                    estimatedMonths > 0 ? '$estimatedMonths months' : 'N/A',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ],
               ),
             ],
@@ -323,7 +519,7 @@ class _GoalCard extends StatelessWidget {
                   ),
                   icon: Icon(Icons.add),
                   label: Text('Add Money'),
-                  onPressed: () {},
+                  onPressed: onAddMoney,
                 ),
               ),
               SizedBox(width: 10),
