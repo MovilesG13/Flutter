@@ -17,21 +17,26 @@ class ConnectivityService extends ChangeNotifier {
   bool get isOnline => _isOnline;
   Stream<bool> get isOnlineStream => _isOnlineController.stream;
 
+  Timer? _debounce;
+
   Future<void> _init() async {
     // Initial check
     final results = await _connectivity.checkConnectivity();
-    _updateStatus(_hasAnyNetwork(results));
+    _setStatus(_hasAnyNetwork(results));
     if (_isOnline) {
       await OfflineQueueService.instance.processQueue();
     }
 
-    // Listen connectivity changes
+    // Listen connectivity changes with debounce to avoid brief blips
     _connectivity.onConnectivityChanged.listen((results) async {
-      final online = _hasAnyNetwork(results);
-      _updateStatus(online);
-      if (online) {
-        await OfflineQueueService.instance.processQueue();
-      }
+      _debounce?.cancel();
+      _debounce = Timer(const Duration(milliseconds: 500), () async {
+        final online = _hasAnyNetwork(results);
+        _setStatus(online);
+        if (online) {
+          await OfflineQueueService.instance.processQueue();
+        }
+      });
     });
   }
 
@@ -40,7 +45,8 @@ class ConnectivityService extends ChangeNotifier {
     return results.any((r) => r != ConnectivityResult.none);
   }
 
-  void _updateStatus(bool online) {
+  void _setStatus(bool online) {
+    if (_isOnline == online) return; // emit only on real change
     _isOnline = online;
     _isOnlineController.add(_isOnline);
     notifyListeners();
@@ -50,6 +56,7 @@ class ConnectivityService extends ChangeNotifier {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _isOnlineController.close();
     super.dispose();
   }

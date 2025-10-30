@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/transaction_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/offline_queue_service.dart';
+import '../widgets/connectivity_snack_listener.dart';
 
 class IncomeForm extends StatefulWidget {
   @override
@@ -25,28 +26,7 @@ class IncomeFormState extends State<IncomeForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          StreamBuilder<bool>(
-            stream: ConnectivityService.instance.isOnlineStream,
-            initialData: ConnectivityService.instance.isOnline,
-            builder: (context, snapshot) {
-              final online = snapshot.data ?? true;
-              if (online) return const SizedBox.shrink();
-              return Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(8),
-                margin: const EdgeInsets.only(top: 8, bottom: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF3CD),
-                  border: Border.all(color: const Color(0xFFFFEEBA)),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text(
-                  'You are offline. This income will be saved locally and synced later.',
-                  style: TextStyle(color: Color(0xFF856404), fontSize: 12),
-                ),
-              );
-            },
-          ),
+          const ConnectivitySnackListener(),
           // Header
           Container(
             width: double.infinity,
