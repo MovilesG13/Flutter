@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'offline_queue_service.dart';
+import 'offline_notes_queue_service.dart';
 
 class ConnectivityService extends ChangeNotifier {
   ConnectivityService._internal() {
@@ -25,6 +26,7 @@ class ConnectivityService extends ChangeNotifier {
     _setStatus(_hasAnyNetwork(results));
     if (_isOnline) {
       await OfflineQueueService.instance.processQueue();
+      await OfflineNotesQueueService.instance.processQueue();
     }
 
     // Listen connectivity changes with debounce to avoid brief blips
@@ -35,6 +37,7 @@ class ConnectivityService extends ChangeNotifier {
         _setStatus(online);
         if (online) {
           await OfflineQueueService.instance.processQueue();
+          await OfflineNotesQueueService.instance.processQueue();
         }
       });
     });
