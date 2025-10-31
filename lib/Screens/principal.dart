@@ -8,6 +8,8 @@ import 'notes_screen.dart';
 import '../services/transaction_service.dart';
 import '../services/savings_goal_service.dart';
 import '../services/connectivity_service.dart';
+import '../services/user_preferences_service.dart';
+import '../services/app_settings_service.dart';
 import '../widgets/connectivity_snack_listener.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -51,11 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     balance = income - expense;
                   }
 
-                  final user = FirebaseAuth.instance.currentUser;
-                  final displayName = (user?.displayName != null &&
-                          user!.displayName!.trim().isNotEmpty)
-                      ? user.displayName!.trim()
-                      : (user?.email?.split('@').first ?? 'User');
+                  final displayName = UserPreferencesService.instance.getDisplayName();
 
                   const monthNames = [
                     'January',
@@ -365,6 +363,54 @@ StreamBuilder<List<MoneyMovement>>(
     );
   },
 ),
+                  const SizedBox(height: 16),
+                  // Last Login (SharedPreferences)
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFbde3f6),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFF0e538f).withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.login, color: Color(0xFF0e538f), size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Last login: ${AppSettingsService.instance.getLastConnectionText()}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF0e538f),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Last Transaction (SharedPreferences)
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFbde3f6),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFF0e538f).withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.account_balance_wallet, color: Color(0xFF0e538f), size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Last transaction: ${AppSettingsService.instance.getLastTransactionText()}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF0e538f),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
 
                 ],
               ),
@@ -378,38 +424,7 @@ StreamBuilder<List<MoneyMovement>>(
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF0e538f)))),
           const NotesScreen(),
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('Profile',
-                    style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF0e538f))),
-                const SizedBox(height: 16),
-                Builder(
-                  builder: (context) {
-                    final user = FirebaseAuth.instance.currentUser;
-                    return Column(
-                      children: [
-                        Text(user?.email ?? 'No email',
-                            style: const TextStyle(fontSize: 14)),
-                        const SizedBox(height: 12),
-                        ElevatedButton.icon(
-                          onPressed: () async {
-                            await FirebaseAuth.instance.signOut();
-                          },
-                          icon: const Icon(Icons.logout),
-                          label: const Text('Logout'),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
+          _ProfileScreen(),
         ],
       ),
       floatingActionButton: _selectedIndex == 0
@@ -565,6 +580,314 @@ class _MiniGoalCard extends StatelessWidget {
               const AlwaysStoppedAnimation<Color>(Color(0xFFbde3f6)),
         ),
       ],
+    );
+  }
+}
+
+class _ProfileScreen extends StatefulWidget {
+  const _ProfileScreen();
+
+  @override
+  State<_ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<_ProfileScreen> {
+  final _prefsService = UserPreferencesService.instance;
+  final _nameController = TextEditingController();
+  String _selectedCurrency = 'USD';
+  bool _notificationsEnabled = true;
+  
+  final List<String> _currencies = ['USD', 'EUR', 'GBP', 'MXN', 'COP', 'ARS', 'BRL'];
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadPreferences();
+  }
+  
+  void _loadPreferences() {
+    setState(() {
+      _selectedCurrency = _prefsService.getCurrency();
+      _notificationsEnabled = _prefsService.areNotificationsEnabled();
+      _nameController.text = _prefsService.getDisplayName();
+    });
+  }
+  
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Profile',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF0e538f),
+            ),
+          ),
+          const SizedBox(height: 24),
+          
+          // User Info Card
+          Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 30,
+                        backgroundColor: const Color(0xFFbde3f6),
+                        child: Text(
+                          _prefsService.getDisplayName().isNotEmpty 
+                              ? _prefsService.getDisplayName()[0].toUpperCase()
+                              : 'U',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF0e538f),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _prefsService.getDisplayName(),
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              user?.email ?? 'No email',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
+          const SizedBox(height: 24),
+          
+          // Display Name Edit
+          Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Display Name',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      hintText: 'Enter your name',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        if (_nameController.text.trim().isNotEmpty) {
+                          try {
+                            await _prefsService.updateDisplayName(_nameController.text.trim());
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Name updated successfully')),
+                              );
+                              setState(() {}); // Refresh UI
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Error updating name: $e')),
+                              );
+                            }
+                          }
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0e538f),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: const Text('Update Name'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // Currency Selection
+          Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Currency',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: _selectedCurrency,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                    ),
+                    items: _currencies.map((currency) {
+                      return DropdownMenuItem(
+                        value: currency,
+                        child: Text(currency),
+                      );
+                    }).toList(),
+                    onChanged: (value) async {
+                      if (value != null) {
+                        setState(() {
+                          _selectedCurrency = value;
+                        });
+                        await _prefsService.setCurrency(value);
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Currency set to $value')),
+                          );
+                        }
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // Notifications Toggle
+          Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Notifications',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Enable push notifications',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Switch(
+                    value: _notificationsEnabled,
+                    onChanged: (value) async {
+                      setState(() {
+                        _notificationsEnabled = value;
+                      });
+                      await _prefsService.setNotificationsEnabled(value);
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              value ? 'Notifications enabled' : 'Notifications disabled',
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    activeColor: const Color(0xFF0e538f),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
+          const SizedBox(height: 24),
+          
+          // Logout Button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut();
+              },
+              icon: const Icon(Icons.logout),
+              label: const Text('Logout'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
     );
   }
 }

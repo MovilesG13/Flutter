@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'services/connectivity_service.dart';
+import 'services/user_preferences_service.dart';
+import 'services/app_settings_service.dart';
 
 
 Future<void> main() async {
@@ -11,6 +13,10 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  // Initialize Hive for user preferences
+  await UserPreferencesService.instance.init();
+  // Initialize SharedPreferences for app settings
+  await AppSettingsService.instance.init();
   // ConnectivityService initializes itself on first access.
   // Ensures instance is created early.
   ConnectivityService.instance;
