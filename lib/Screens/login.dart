@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../auth/google_auth_service.dart';
+import '../services/user_preferences_service.dart';
+import '../services/app_settings_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -34,6 +36,12 @@ class _LoginScreenState extends State<LoginScreen> {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailCtrl.text.trim(),
         password: _passwordCtrl.text.trim(),
+      );
+      // Sync display name to Hive cache after login
+      await UserPreferencesService.instance.syncDisplayNameFromFirebase();
+      // Save last login timestamp
+      await AppSettingsService.instance.setLastLoginTimestamp(
+        DateTime.now().millisecondsSinceEpoch,
       );
       // AuthGate se encargará de redirigir automáticamente.
       if (mounted) {

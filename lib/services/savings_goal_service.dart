@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'transaction_service.dart';
+import 'app_settings_service.dart';
 
 /// Modelo de dominio para una meta de ahorro
 class SavingsGoal {
@@ -148,6 +149,11 @@ class SavingsGoalService {
       category: 'Savings',
       description: 'Contribution to $goalName',
       date: DateTime.now(),
+    );
+    
+    // Save last transaction timestamp
+    await AppSettingsService.instance.setLastTransactionTimestamp(
+      DateTime.now().millisecondsSinceEpoch,
     );
   }
 

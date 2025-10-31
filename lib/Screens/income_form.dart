@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/transaction_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/offline_queue_service.dart';
+import '../services/app_settings_service.dart';
 import '../widgets/connectivity_snack_listener.dart';
 
 class IncomeForm extends StatefulWidget {
@@ -148,6 +149,10 @@ class IncomeFormState extends State<IncomeForm> {
                                 category: _category!,
                                 description: _descController.text.trim().isEmpty ? null : _descController.text.trim(),
                                 date: _selectedDate!,
+                              );
+                              // Save last transaction timestamp
+                              await AppSettingsService.instance.setLastTransactionTimestamp(
+                                DateTime.now().millisecondsSinceEpoch,
                               );
                               if (mounted) {
                                 Navigator.pop(context);
