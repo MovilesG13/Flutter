@@ -4,7 +4,9 @@ import '../Screens/principal.dart';
 import '../Screens/welcome.dart';
 
 class AuthGate extends StatelessWidget {
-  const AuthGate({super.key});
+  final Function(String)? onThemeChanged;
+  
+  const AuthGate({super.key, this.onThemeChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +24,7 @@ class AuthGate extends StatelessWidget {
           );
         }
         if (snapshot.data != null) {
-          return const HomeScreen();
+          return HomeScreen(onThemeChanged: onThemeChanged);
         }
         return const WelcomeScreen();
       },

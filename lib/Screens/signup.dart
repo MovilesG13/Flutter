@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../services/user_preferences_service.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -35,6 +36,8 @@ class _SignupScreenState extends State<SignupScreen> {
       );
       if (_nameCtrl.text.trim().isNotEmpty) {
         await cred.user?.updateDisplayName(_nameCtrl.text.trim());
+        // Save display name to Hive
+        await UserPreferencesService.instance.setLocalDisplayName(_nameCtrl.text.trim());
       }
       // AuthGate detectará el nuevo estado logueado.
       if (mounted) {
