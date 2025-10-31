@@ -87,6 +87,17 @@ class UserPreferencesService {
     return 'User';
   }
   
+  // Future with .then() handler - Set currency with callback
+  Future<void> setCurrencyWithCallback(String currency, {Function()? onSuccess}) {
+    return Future.value(_prefsBox?.put(_keyCurrency, currency)).then(
+      (result) {
+        if (onSuccess != null) {
+          onSuccess();
+        }
+      },
+    );
+  }
+  
   void dispose() {
     _prefsBox?.close();
   }

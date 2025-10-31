@@ -388,28 +388,41 @@ StreamBuilder<List<MoneyMovement>>(
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // Last Transaction (SharedPreferences)
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFbde3f6),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF0e538f).withOpacity(0.3)),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.account_balance_wallet, color: Color(0xFF0e538f), size: 20),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Last transaction: ${AppSettingsService.instance.getLastTransactionText()}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF0e538f),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
+                  // Last Transaction (SharedPreferences) - Updates when transactions change
+                  StreamBuilder<List<MoneyMovement>>(
+                    stream: TransactionService.instance.userMovementsStream(),
+                    builder: (context, snapshot) {
+                      // Recalculate future each time stream updates to get fresh data
+                      return FutureBuilder<String>(
+                        future: AppSettingsService.instance.getLastTransactionTextAsync(),
+                        key: ValueKey(snapshot.data?.length ?? 0), // Force rebuild when transaction count changes
+                        builder: (context, futureSnapshot) {
+                          final text = futureSnapshot.data ?? 'No transactions yet';
+                          return Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFbde3f6),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: const Color(0xFF0e538f).withOpacity(0.3)),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.account_balance_wallet, color: Color(0xFF0e538f), size: 20),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Last transaction: $text',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Color(0xFF0e538f),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
                   ),
 
                 ],

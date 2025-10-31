@@ -170,4 +170,98 @@ class SavingsGoalService {
       'currentAmount': newAmount,
     });
   }
+  
+  // Future with .then() handler - Add goal with callback
+  Future<String> addGoalWithCallback({
+    required String name,
+    required double targetAmount,
+    Function(String goalId)? onSuccess,
+    Function(dynamic error)? onError,
+  }) {
+    final uid = _auth.currentUser!.uid;
+    final col = _userGoalsCol(uid);
+    return col.add({
+      'name': name,
+      'targetAmount': targetAmount,
+      'currentAmount': 0.0,
+      'uid': uid,
+      'createdAt': FieldValue.serverTimestamp(),
+    }).then(
+      (doc) {
+        if (onSuccess != null) {
+          onSuccess(doc.id);
+        }
+        return doc.id;
+      },
+      onError: (error) {
+        if (onError != null) {
+          onError(error);
+        }
+        throw error;
+      },
+    );
+  }
+  
+  // Future with .then() handler + async/await combined
+  // Add goal and then perform additional async operations
+  Future<String> addGoalWithCombinedAsync({
+    required String name,
+    required double targetAmount,
+  }) async {
+    // Start with async/await
+    final uid = await Future.value(_auth.currentUser!.uid);
+    final col = _userGoalsCol(uid);
+    
+    // Use .then() to chain the Firestore operation
+    return col.add({
+      'name': name,
+      'targetAmount': targetAmount,
+      'currentAmount': 0.0,
+      'uid': uid,
+      'createdAt': FieldValue.serverTimestamp(),
+    }).then((doc) async {
+      // Inside .then() callback, use async/await for additional work
+      final goalId = doc.id;
+      
+      // Perform additional async operations
+      await Future.delayed(Duration(milliseconds: 100));
+      
+      return goalId;
+    }).then((goalId) async {
+      // Chain another .then() with async work
+      await Future.delayed(Duration(milliseconds: 50));
+      return goalId;
+    });
+  }
+  
+  // Future with .then() handler + async/await combined
+  // Add money to goal with combined async patterns
+  Future<void> addMoneyToGoalWithCombinedAsync(String goalId, double amount) async {
+    // Start with async/await
+    final uid = await Future.value(_auth.currentUser!.uid);
+    final docRef = _userGoalsCol(uid).doc(goalId);
+    
+    // Use async/await to read the goal
+    final goalSnap = await docRef.get();
+    final goalData = goalSnap.data();
+    final goalName = goalData != null ? (goalData['name'] as String? ?? 'Savings Goal') : 'Savings Goal';
+    
+    // Use .then() to chain the update operation
+    return docRef.update({
+      'currentAmount': FieldValue.increment(amount),
+    }).then((_) async {
+      // Inside .then(), use async/await for the expense registration
+      await TransactionService.instance.addExpense(
+        amount: amount,
+        category: 'Savings',
+        description: 'Contribution to $goalName',
+        date: DateTime.now(),
+      );
+      
+      // More async operations
+      await AppSettingsService.instance.setLastTransactionTimestamp(
+        DateTime.now().millisecondsSinceEpoch,
+      );
+    });
+  }
 }

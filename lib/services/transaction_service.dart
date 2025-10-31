@@ -120,4 +120,142 @@ class TransactionService {
     final uid = _auth.currentUser!.uid;
     await _userMovementsCol(uid).doc(id).delete();
   }
+  
+  // Future with .then() handler - Add income with callback
+  Future<String> addIncomeWithCallback({
+    required double amount,
+    required String category,
+    String? description,
+    required DateTime date,
+    Function(String docId)? onSuccess,
+    Function(dynamic error)? onError,
+  }) {
+    final uid = _auth.currentUser!.uid;
+    final col = _userMovementsCol(uid);
+    return col.add({
+      'amount': amount,
+      'type': 'income',
+      'category': category,
+      'description': description,
+      'date': Timestamp.fromDate(date),
+      'uid': uid,
+      'createdAt': FieldValue.serverTimestamp(),
+    }).then(
+      (doc) {
+        if (onSuccess != null) {
+          onSuccess(doc.id);
+        }
+        return doc.id;
+      },
+      onError: (error) {
+        if (onError != null) {
+          onError(error);
+        }
+        throw error;
+      },
+    );
+  }
+  
+  // Future with .then() handler - Add expense with callback
+  Future<String> addExpenseWithCallback({
+    required double amount,
+    required String category,
+    String? description,
+    required DateTime date,
+    Function(String docId)? onSuccess,
+    Function(dynamic error)? onError,
+  }) {
+    final uid = _auth.currentUser!.uid;
+    final col = _userMovementsCol(uid);
+    return col.add({
+      'amount': amount,
+      'type': 'expense',
+      'category': category,
+      'description': description,
+      'date': Timestamp.fromDate(date),
+      'uid': uid,
+      'createdAt': FieldValue.serverTimestamp(),
+    }).then(
+      (doc) {
+        if (onSuccess != null) {
+          onSuccess(doc.id);
+        }
+        return doc.id;
+      },
+      onError: (error) {
+        if (onError != null) {
+          onError(error);
+        }
+        throw error;
+      },
+    );
+  }
+  
+  // Future with .then() handler + async/await combined
+  // This method demonstrates using async/await AND .then() together
+  Future<String> addIncomeWithCombinedAsync({
+    required double amount,
+    required String category,
+    String? description,
+    required DateTime date,
+  }) async {
+    final uid = _auth.currentUser!.uid;
+    final col = _userMovementsCol(uid);
+    
+    // First, use async/await to get the document reference
+    await Future.delayed(Duration(milliseconds: 100)); // Simulate async work
+    
+    // Then use .then() handler to chain operations
+    return col.add({
+      'amount': amount,
+      'type': 'income',
+      'category': category,
+      'description': description,
+      'date': Timestamp.fromDate(date),
+      'uid': uid,
+      'createdAt': FieldValue.serverTimestamp(),
+    }).then((doc) async {
+      // Inside .then(), use async/await for additional operations
+      await Future.delayed(Duration(milliseconds: 50));
+      // Can perform additional async operations here
+      return doc.id;
+    }).then((docId) async {
+      // Chain another .then() with async work
+      await Future.delayed(Duration(milliseconds: 25));
+      return docId;
+    });
+  }
+  
+  // Future with .then() handler + async/await combined
+  // Process transaction and update related data
+  Future<String> addExpenseWithCombinedAsync({
+    required double amount,
+    required String category,
+    String? description,
+    required DateTime date,
+  }) async {
+    // Start with async/await
+    final uid = await Future.value(_auth.currentUser!.uid);
+    final col = _userMovementsCol(uid);
+    
+    // Use .then() to chain the Firestore operation
+    return col.add({
+      'amount': amount,
+      'type': 'expense',
+      'category': category,
+      'description': description,
+      'date': Timestamp.fromDate(date),
+      'uid': uid,
+      'createdAt': FieldValue.serverTimestamp(),
+    }).then((doc) async {
+      // Inside .then() callback, use async/await
+      final docId = doc.id;
+      
+      // Perform additional async operations
+      await Future.delayed(Duration(milliseconds: 100));
+      
+      // Return the document ID
+      return docId;
+    });
+  }
 }
