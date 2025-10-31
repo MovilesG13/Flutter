@@ -150,11 +150,6 @@ class SavingsGoalService {
       description: 'Contribution to $goalName',
       date: DateTime.now(),
     );
-    
-    // Save last transaction timestamp
-    await AppSettingsService.instance.setLastTransactionTimestamp(
-      DateTime.now().millisecondsSinceEpoch,
-    );
   }
 
   /// Restar dinero de una meta (si se necesita)
@@ -256,11 +251,6 @@ class SavingsGoalService {
         category: 'Savings',
         description: 'Contribution to $goalName',
         date: DateTime.now(),
-      );
-      
-      // More async operations
-      await AppSettingsService.instance.setLastTransactionTimestamp(
-        DateTime.now().millisecondsSinceEpoch,
       );
     });
   }

@@ -150,10 +150,6 @@ class ExpenseFormState extends State<ExpenseForm> {
                                 description: _descController.text.trim().isEmpty ? null : _descController.text.trim(),
                                 date: _selectedDate!,
                               );
-                              // Save last transaction timestamp
-                              await AppSettingsService.instance.setLastTransactionTimestamp(
-                                DateTime.now().millisecondsSinceEpoch,
-                              );
                               if (mounted) {
                                 Navigator.pop(context);
                                 ScaffoldMessenger.of(context).showSnackBar(

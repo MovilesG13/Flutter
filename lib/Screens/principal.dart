@@ -10,6 +10,7 @@ import '../services/savings_goal_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/user_preferences_service.dart';
 import '../services/app_settings_service.dart';
+import '../services/insights_service.dart';
 import '../widgets/connectivity_snack_listener.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -29,6 +30,25 @@ class _HomeScreenState extends State<HomeScreen> {
     const Color(0xFFfa2e38),
     const Color(0xFF0e538f)
   ];
+  
+  // Helper function para formatear la fecha de última transacción
+  String _formatLastTransactionTime(int timestamp) {
+    if (timestamp == 0) return '';
+    
+    final lastTransaction = DateTime.fromMillisecondsSinceEpoch(timestamp);
+    final now = DateTime.now();
+    final difference = now.difference(lastTransaction);
+    
+    if (difference.inDays > 0) {
+      return 'Last transaction: ${difference.inDays} day${difference.inDays > 1 ? 's' : ''} ago';
+    } else if (difference.inHours > 0) {
+      return 'Last transaction: ${difference.inHours} hour${difference.inHours > 1 ? 's' : ''} ago';
+    } else if (difference.inMinutes > 0) {
+      return 'Last transaction: ${difference.inMinutes} minute${difference.inMinutes > 1 ? 's' : ''} ago';
+    } else {
+      return 'Last transaction: Just now';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -262,7 +282,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-// Insights: Todo en un solo bloque
+// Insights: Calculado en un isolate separado para no bloquear el UI thread
 StreamBuilder<List<MoneyMovement>>(
   stream: TransactionService.instance.userMovementsStream(),
   builder: (context, snapshot) {
@@ -271,161 +291,106 @@ StreamBuilder<List<MoneyMovement>>(
       return const SizedBox.shrink();
     }
 
-    // Calcular gastos por categoría
-    final expenses = movements.where((m) => m.type == 'expense').toList();
-    final Map<String, double> expenseByCategory = {};
-    final Map<String, double> incomeByCategory = {};
+    // Usar FutureBuilder para esperar el resultado del isolate
+    return FutureBuilder<InsightsResult>(
+      future: InsightsService.instance.computeInsightsAsync(movements),
+      builder: (context, insightsSnapshot) {
+        // Mostrar loading mientras se calcula en el isolate
+        if (!insightsSnapshot.hasData) {
+          return Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: const [
+                BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 2))
+              ],
+            ),
+            child: const Center(
+              child: SizedBox(
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          );
+        }
+        
+        final insights = insightsSnapshot.data!;
+        final hasExpenses = movements.any((m) => m.type == 'expense');
+        final hasData = insights.topExpenseAmount > 0 || 
+                       insights.topIncomeAmount > 0 || 
+                       hasExpenses;
+        
+        if (!hasData) {
+          return const SizedBox.shrink();
+        }
 
-    for (final m in movements) {
-      final cat = (m.category ?? 'Uncategorized').trim();
-      if (m.type == 'expense') {
-        expenseByCategory[cat] = (expenseByCategory[cat] ?? 0) + m.amount;
-      } else if (m.type == 'income') {
-        incomeByCategory[cat] = (incomeByCategory[cat] ?? 0) + m.amount;
-      }
-    }
-
-    String topExpenseCat = 'N/A';
-    double topExpenseAmt = 0;
-    expenseByCategory.forEach((k, v) {
-      if (v > topExpenseAmt) {
-        topExpenseAmt = v;
-        topExpenseCat = k;
-      }
-    });
-
-    String topIncomeCat = 'N/A';
-    double topIncomeAmt = 0;
-    incomeByCategory.forEach((k, v) {
-      if (v > topIncomeAmt) {
-        topIncomeAmt = v;
-        topIncomeCat = k;
-      }
-    });
-
-    // Calcular últimas 5 transacciones de gastos
-    final last5 = expenses.length > 5 ? expenses.sublist(expenses.length - 5) : expenses;
-    final recentExpenses = last5.fold(0.0, (sum, m) => sum + m.amount);
-    final totalExpenses = expenses.fold(0.0, (sum, m) => sum + m.amount);
-    final percent = totalExpenses > 0 ? (recentExpenses / totalExpenses) * 100 : 0;
-
-    final hasData = topExpenseAmt > 0 || topIncomeAmt > 0 || expenses.isNotEmpty;
-    if (!hasData) {
-      return const SizedBox.shrink();
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 2))
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: const [
-              Icon(Icons.lightbulb, color: Color(0xFF0e538f)),
-              SizedBox(width: 8),
-              Text('Smart Insights',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: const [
+              BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 2))
             ],
           ),
-          const SizedBox(height: 12),
-          if (topExpenseAmt > 0) ...[
-            Text(
-              'Your highest spending category is "$topExpenseCat" (\$${topExpenseAmt.toStringAsFixed(2)}).',
-              style: const TextStyle(fontSize: 14, color: Color(0xFFfa2e38), fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 8),
-          ],
-          if (topIncomeAmt > 0) ...[
-            Text(
-              'Your highest income category is "$topIncomeCat" (\$${topIncomeAmt.toStringAsFixed(2)}).',
-              style: const TextStyle(fontSize: 14, color: Color(0xFF06c951), fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 8),
-          ],
-          if (expenses.isNotEmpty) ...[
-            Text(
-              'In your last 5 expense transactions you spent \$${recentExpenses.toStringAsFixed(2)}.',
-              style: const TextStyle(fontSize: 14, color: Color(0xFF0e538f), fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'This represents ${percent.toStringAsFixed(0)}% of your total expenses.',
-              style: const TextStyle(fontSize: 14, color: Color(0xFF0e538f), fontWeight: FontWeight.w600),
-            ),
-          ],
-        ],
-      ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: const [
+                  Icon(Icons.lightbulb, color: Color(0xFF0e538f)),
+                  SizedBox(width: 8),
+                  Text('Smart Insights',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                ],
+              ),
+              const SizedBox(height: 12),
+              if (insights.topExpenseAmount > 0) ...[
+                Text(
+                  'Your highest spending category is "${insights.topExpenseCategory}" (\$${insights.topExpenseAmount.toStringAsFixed(2)}).',
+                  style: const TextStyle(fontSize: 14, color: Color(0xFFfa2e38), fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 8),
+              ],
+              if (insights.topIncomeAmount > 0) ...[
+                Text(
+                  'Your highest income category is "${insights.topIncomeCategory}" (\$${insights.topIncomeAmount.toStringAsFixed(2)}).',
+                  style: const TextStyle(fontSize: 14, color: Color(0xFF06c951), fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 8),
+              ],
+              if (hasExpenses) ...[
+                Text(
+                  'In your last 5 expense transactions you spent \$${insights.recentExpenses.toStringAsFixed(2)}.',
+                  style: const TextStyle(fontSize: 14, color: Color(0xFF0e538f), fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'This represents ${insights.percent.toStringAsFixed(0)}% of your total expenses.',
+                  style: const TextStyle(fontSize: 14, color: Color(0xFF0e538f), fontWeight: FontWeight.w600),
+                ),
+              ],
+              if (insights.lastTransactionTimestamp > 0) ...[
+                const SizedBox(height: 8),
+                Text(
+                  _formatLastTransactionTime(insights.lastTransactionTimestamp),
+                  style: const TextStyle(
+                    fontSize: 12, 
+                    color: Color(0xFF0e538f), 
+                    fontWeight: FontWeight.w500,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
     );
   },
 ),
-                  const SizedBox(height: 16),
-                  // Last Login (SharedPreferences)
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFbde3f6),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF0e538f).withOpacity(0.3)),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.login, color: Color(0xFF0e538f), size: 20),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Last login: ${AppSettingsService.instance.getLastConnectionText()}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF0e538f),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  // Last Transaction (SharedPreferences) - Updates when transactions change
-                  StreamBuilder<List<MoneyMovement>>(
-                    stream: TransactionService.instance.userMovementsStream(),
-                    builder: (context, snapshot) {
-                      // Recalculate future each time stream updates to get fresh data
-                      return FutureBuilder<String>(
-                        future: AppSettingsService.instance.getLastTransactionTextAsync(),
-                        key: ValueKey(snapshot.data?.length ?? 0), // Force rebuild when transaction count changes
-                        builder: (context, futureSnapshot) {
-                          final text = futureSnapshot.data ?? 'No transactions yet';
-                          return Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFbde3f6),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: const Color(0xFF0e538f).withOpacity(0.3)),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.account_balance_wallet, color: Color(0xFF0e538f), size: 20),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Last transaction: $text',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Color(0xFF0e538f),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
 
                 ],
               ),
@@ -600,13 +565,9 @@ class _MiniGoalCard extends StatelessWidget {
 }
 
 class _ProfileScreen extends StatefulWidget {
-<<<<<<< HEAD
   final Function(String)? onThemeChanged;
   
   const _ProfileScreen({this.onThemeChanged});
-=======
-  const _ProfileScreen();
->>>>>>> Develop
 
   @override
   State<_ProfileScreen> createState() => _ProfileScreenState();
@@ -617,10 +578,7 @@ class _ProfileScreenState extends State<_ProfileScreen> {
   final _nameController = TextEditingController();
   String _selectedCurrency = 'USD';
   bool _notificationsEnabled = true;
-<<<<<<< HEAD
   bool _darkMode = false;
-=======
->>>>>>> Develop
   
   final List<String> _currencies = ['USD', 'EUR', 'GBP', 'MXN', 'COP', 'ARS', 'BRL'];
   
@@ -630,20 +588,13 @@ class _ProfileScreenState extends State<_ProfileScreen> {
     _loadPreferences();
   }
   
-<<<<<<< HEAD
   void _loadPreferences() async {
     final themeMode = await AppSettingsService.instance.getThemeMode();
-=======
-  void _loadPreferences() {
->>>>>>> Develop
     setState(() {
       _selectedCurrency = _prefsService.getCurrency();
       _notificationsEnabled = _prefsService.areNotificationsEnabled();
       _nameController.text = _prefsService.getDisplayName();
-<<<<<<< HEAD
       _darkMode = themeMode == 'dark';
-=======
->>>>>>> Develop
     });
   }
   
@@ -848,7 +799,6 @@ class _ProfileScreenState extends State<_ProfileScreen> {
           
           const SizedBox(height: 16),
           
-<<<<<<< HEAD
           // Dark Mode Toggle (SharedPreferences)
           Card(
             elevation: 2,
@@ -909,8 +859,6 @@ class _ProfileScreenState extends State<_ProfileScreen> {
           
           const SizedBox(height: 16),
           
-=======
->>>>>>> Develop
           // Notifications Toggle
           Card(
             elevation: 2,

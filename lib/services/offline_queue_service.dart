@@ -84,11 +84,6 @@ class OfflineQueueService {
             date: date,
           );
         }
-        
-        // Save last transaction timestamp when processing offline queue
-        await AppSettingsService.instance.setLastTransactionTimestamp(
-          DateTime.now().millisecondsSinceEpoch,
-        );
 
         // Borrar solo si se procesó correctamente
         await db.delete(
