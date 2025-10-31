@@ -37,14 +37,25 @@ class UserPreferencesService {
   }
   
   // ========== Display Name ==========
-  // Get local cached name (for offline/quick access)
-  String? getLocalDisplayName() {
-    return _prefsBox?.get(_keyLocalDisplayName);
+  // Helper para obtener la clave específica del usuario
+  String _getDisplayNameKey() {
+    final user = FirebaseAuth.instance.currentUser;
+    final uid = user?.uid ?? 'anonymous';
+    return '${_keyLocalDisplayName}_$uid';
   }
   
-  // Set local cached name
+  // Get local cached name (for offline/quick access) - específico por usuario
+  String? getLocalDisplayName() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return null;
+    return _prefsBox?.get(_getDisplayNameKey());
+  }
+  
+  // Set local cached name - específico por usuario
   Future<void> setLocalDisplayName(String name) async {
-    await _prefsBox?.put(_keyLocalDisplayName, name);
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    await _prefsBox?.put(_getDisplayNameKey(), name);
   }
   
   // Sync display name from Firebase Auth to Hive (source of truth is Firebase)
@@ -63,7 +74,7 @@ class UserPreferencesService {
       await user.updateDisplayName(name);
       await user.reload();
       
-      // Update local cache
+      // Update local cache - ahora será específico para este usuario
       await setLocalDisplayName(name);
     }
   }
@@ -75,7 +86,7 @@ class UserPreferencesService {
     if (user?.displayName != null && user!.displayName!.trim().isNotEmpty) {
       return user.displayName!.trim();
     }
-    // Fallback to Hive cache
+    // Fallback to Hive cache (ahora específico por usuario)
     final localName = getLocalDisplayName();
     if (localName != null && localName.isNotEmpty) {
       return localName;
