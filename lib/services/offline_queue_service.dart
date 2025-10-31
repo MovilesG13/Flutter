@@ -2,6 +2,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'transaction_service.dart';
+import 'app_settings_service.dart';
 
 class OfflineQueueService {
   OfflineQueueService._();
@@ -83,6 +84,11 @@ class OfflineQueueService {
             date: date,
           );
         }
+        
+        // Save last transaction timestamp when processing offline queue
+        await AppSettingsService.instance.setLastTransactionTimestamp(
+          DateTime.now().millisecondsSinceEpoch,
+        );
 
         // Borrar solo si se procesó correctamente
         await db.delete(

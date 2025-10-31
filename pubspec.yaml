@@ -47,6 +47,7 @@ dependencies:
   sqflite: ^2.3.3
   cached_network_image: ^3.3.1
   firebase_storage: ^13.0.2
+  flutter_cache_manager: ^3.4.1
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   shared_preferences: ^2.2.2

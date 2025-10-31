@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../auth/google_auth_service.dart';
 import '../services/user_preferences_service.dart';
+import '../services/app_settings_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -36,8 +37,17 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _emailCtrl.text.trim(),
         password: _passwordCtrl.text.trim(),
       );
+<<<<<<< HEAD
       // Sync display name from Firebase to Hive
       await UserPreferencesService.instance.syncDisplayNameFromFirebase();
+=======
+      // Sync display name to Hive cache after login
+      await UserPreferencesService.instance.syncDisplayNameFromFirebase();
+      // Save last login timestamp
+      await AppSettingsService.instance.setLastLoginTimestamp(
+        DateTime.now().millisecondsSinceEpoch,
+      );
+>>>>>>> Develop
       // AuthGate se encargará de redirigir automáticamente.
       if (mounted) {
         // Cierra la pantalla de login para que se vea el Home que AuthGate ya reconstruyó.

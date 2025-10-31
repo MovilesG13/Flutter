@@ -365,6 +365,67 @@ StreamBuilder<List<MoneyMovement>>(
     );
   },
 ),
+                  const SizedBox(height: 16),
+                  // Last Login (SharedPreferences)
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFbde3f6),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFF0e538f).withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.login, color: Color(0xFF0e538f), size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Last login: ${AppSettingsService.instance.getLastConnectionText()}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF0e538f),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Last Transaction (SharedPreferences) - Updates when transactions change
+                  StreamBuilder<List<MoneyMovement>>(
+                    stream: TransactionService.instance.userMovementsStream(),
+                    builder: (context, snapshot) {
+                      // Recalculate future each time stream updates to get fresh data
+                      return FutureBuilder<String>(
+                        future: AppSettingsService.instance.getLastTransactionTextAsync(),
+                        key: ValueKey(snapshot.data?.length ?? 0), // Force rebuild when transaction count changes
+                        builder: (context, futureSnapshot) {
+                          final text = futureSnapshot.data ?? 'No transactions yet';
+                          return Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFbde3f6),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: const Color(0xFF0e538f).withOpacity(0.3)),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.account_balance_wallet, color: Color(0xFF0e538f), size: 20),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Last transaction: $text',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Color(0xFF0e538f),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
 
                 ],
               ),
@@ -539,9 +600,13 @@ class _MiniGoalCard extends StatelessWidget {
 }
 
 class _ProfileScreen extends StatefulWidget {
+<<<<<<< HEAD
   final Function(String)? onThemeChanged;
   
   const _ProfileScreen({this.onThemeChanged});
+=======
+  const _ProfileScreen();
+>>>>>>> Develop
 
   @override
   State<_ProfileScreen> createState() => _ProfileScreenState();
@@ -552,7 +617,10 @@ class _ProfileScreenState extends State<_ProfileScreen> {
   final _nameController = TextEditingController();
   String _selectedCurrency = 'USD';
   bool _notificationsEnabled = true;
+<<<<<<< HEAD
   bool _darkMode = false;
+=======
+>>>>>>> Develop
   
   final List<String> _currencies = ['USD', 'EUR', 'GBP', 'MXN', 'COP', 'ARS', 'BRL'];
   
@@ -562,13 +630,20 @@ class _ProfileScreenState extends State<_ProfileScreen> {
     _loadPreferences();
   }
   
+<<<<<<< HEAD
   void _loadPreferences() async {
     final themeMode = await AppSettingsService.instance.getThemeMode();
+=======
+  void _loadPreferences() {
+>>>>>>> Develop
     setState(() {
       _selectedCurrency = _prefsService.getCurrency();
       _notificationsEnabled = _prefsService.areNotificationsEnabled();
       _nameController.text = _prefsService.getDisplayName();
+<<<<<<< HEAD
       _darkMode = themeMode == 'dark';
+=======
+>>>>>>> Develop
     });
   }
   
@@ -773,6 +848,7 @@ class _ProfileScreenState extends State<_ProfileScreen> {
           
           const SizedBox(height: 16),
           
+<<<<<<< HEAD
           // Dark Mode Toggle (SharedPreferences)
           Card(
             elevation: 2,
@@ -833,6 +909,8 @@ class _ProfileScreenState extends State<_ProfileScreen> {
           
           const SizedBox(height: 16),
           
+=======
+>>>>>>> Develop
           // Notifications Toggle
           Card(
             elevation: 2,
