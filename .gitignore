@@ -1,0 +1,74 @@
+# === Flutter / Dart ===
+.dart_tool/
+.packages
+pubspec.lock # (si quieres fijar versiones en equipo puedes quitar este comentario y permitirlo)
+build/
+coverage/
+
+# Generated plugin registrant & ephemeral
+flutter_export_environment.sh
+**/Generated.xcconfig
+**/Flutter.podspec
+
+# === IDE ===
+.vscode/
+.idea/
+*.iml
+
+# === OS files ===
+.DS_Store
+Thumbs.db
+
+# === Logs ===
+*.log
+flutter_*.png
+
+# === Android ===
+android/.gradle/
+android/captures/
+android/local.properties
+android/key.properties
+**/gradle-wrapper.jar
+**/gradle-wrapper.properties.backup
+
+# Keystore (si existiera)
+*.jks
+*.keystore
+
+# === iOS / macOS ===
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/App.framework
+ios/ServiceDefinitions.json
+ios/Runner/GeneratedPluginRegistrant.*
+macos/Pods/
+macos/Flutter/GeneratedPluginRegistrant.*
+
+# Xcode user data
+**/xcuserdata/
+**/DerivedData/
+*.xcworkspace/xcuserdata
+
+# === Web build artifacts ===
+web/.dart_tool/
+web/build/
+
+# === Windows / Linux builds ===
+windows/flutter/ephemeral/
+linux/flutter/ephemeral/
+
+# === Firebase / Secrets (ajusta según necesidades) ===
+# google-services.json y GoogleService-Info.plist normalmente sí van al repo si no contienen secretos extra.
+# Si decides ignorarlos, descomenta:
+# android/app/google-services.json
+# ios/Runner/GoogleService-Info.plist
+
+# === Other generated ===
+**/native_assets/
+**/gen/
+
+# Temporary
+tmp/
+temp/
