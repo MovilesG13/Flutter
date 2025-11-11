@@ -116,7 +116,6 @@ class _NotesScreenState extends State<NotesScreen> {
             _isUploading = false;
           });
         }
-        }
       }
     } catch (e) {
       print('Error picking image: $e');
