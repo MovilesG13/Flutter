@@ -13,6 +13,7 @@ class ConnectivityService extends ChangeNotifier {
 
   final Connectivity _connectivity = Connectivity();
   final StreamController<bool> _isOnlineController = StreamController<bool>.broadcast();
+  
 
   bool _isOnline = true;
   bool get isOnline => _isOnline;
