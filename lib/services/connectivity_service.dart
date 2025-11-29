@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'offline_queue_service.dart';
 import 'offline_notes_queue_service.dart';
 
+
 class ConnectivityService extends ChangeNotifier {
   ConnectivityService._internal() {
     _init();
