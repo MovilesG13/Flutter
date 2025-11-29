@@ -16,6 +16,25 @@ class ReportsScreen extends StatefulWidget {
 class _ReportsScreenState extends State<ReportsScreen> {
   int selectedTab = 0; // 0: By Categories, 1: Monthly Reports
 
+  // Microoptimization: Lista de colores como constante estática para evitar recrearla en cada rebuild
+  static const List<Color> _categoryColors = [
+    Color(0xFFfa2e38), // Red
+    Color(0xFF0e538f), // Blue
+    Color(0xFF06c951), // Green
+    Color(0xFFFF9800), // Orange
+    Color(0xFFFFEB3B), // Yellow
+    Color(0xFF9C27B0), // Purple
+    Color(0xFFE91E63), // Pink
+    Color(0xFF00BCD4), // Cyan
+    Color(0xFF4CAF50), // Light Green
+    Color(0xFFFF5722), // Deep Orange
+    Color(0xFF2196F3), // Light Blue
+    Color(0xFF795548), // Brown
+    Color(0xFF607D8B), // Blue Grey
+    Color(0xFF3F51B5), // Indigo
+    Color(0xFF00E676), // Green Accent
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -249,25 +268,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final totalExpenses = categoryEntries
         .fold<double>(0, (sum, entry) => sum + entry.value);
 
-    // Generate colors for each category - diverse color palette
-    final List<Color> categoryColors = [
-                  const Color(0xFFfa2e38), // Red
-                  const Color(0xFF0e538f), // Blue
-                  const Color(0xFF06c951), // Green
-                  const Color(0xFFFF9800), // Orange
-                  const Color(0xFFFFEB3B), // Yellow
-                  const Color(0xFF9C27B0), // Purple
-                  const Color(0xFFE91E63), // Pink
-                  const Color(0xFF00BCD4), // Cyan
-                  const Color(0xFF4CAF50), // Light Green
-                  const Color(0xFFFF5722), // Deep Orange
-                  const Color(0xFF2196F3), // Light Blue
-                  const Color(0xFF795548), // Brown
-                  const Color(0xFF607D8B), // Blue Grey
-      const Color(0xFF3F51B5), // Indigo
-      const Color(0xFF00E676), // Green Accent
-    ];
-
     // Create pie chart sections
     final pieChartSections = categoryEntries.asMap().entries.map((entry) {
       final index = entry.key;
@@ -277,7 +277,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
       return PieChartSectionData(
         value: categoryEntry.value,
         title: '${percentage.toStringAsFixed(1)}%',
-        color: categoryColors[index % categoryColors.length],
+        color: _categoryColors[index % _categoryColors.length],
         radius: 80,
         titleStyle: const TextStyle(
           fontSize: 12,
@@ -395,7 +395,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 final categoryEntry = entry.value;
                 final percentage =
                     (categoryEntry.value / totalExpenses * 100);
-                final color = categoryColors[index % categoryColors.length];
+                final color = _categoryColors[index % _categoryColors.length];
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12),
