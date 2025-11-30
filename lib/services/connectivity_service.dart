@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'offline_queue_service.dart';
 import 'offline_notes_queue_service.dart';
 
+
 class ConnectivityService extends ChangeNotifier {
   ConnectivityService._internal() {
     _init();
@@ -13,6 +14,7 @@ class ConnectivityService extends ChangeNotifier {
 
   final Connectivity _connectivity = Connectivity();
   final StreamController<bool> _isOnlineController = StreamController<bool>.broadcast();
+  
 
   bool _isOnline = true;
   bool get isOnline => _isOnline;

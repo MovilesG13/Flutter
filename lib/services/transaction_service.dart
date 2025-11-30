@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'transactions_cache_service.dart';
 
 /// Simple domain model for a money movement (income or expense)
 class MoneyMovement {
@@ -113,7 +114,14 @@ class TransactionService {
     return _userMovementsCol(uid)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snap) => snap.docs.map(MoneyMovement.fromDoc).toList());
+        .map((snap) {
+          final movements = snap.docs.map(MoneyMovement.fromDoc).toList();
+          // Cache transactions locally for offline access (eventual connectivity)
+          TransactionsCacheService.instance.cacheTransactions(movements).catchError((e) {
+            print('Error caching transactions: $e');
+          });
+          return movements;
+        });
   }
 
   Future<void> deleteMovement(String id) async {

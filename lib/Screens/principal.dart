@@ -5,6 +5,7 @@ import 'income_form.dart';
 import 'expense_form.dart';
 import 'savings_screen.dart';
 import 'notes_screen.dart';
+import 'reports_screen.dart';
 import '../services/transaction_service.dart';
 import '../services/savings_goal_service.dart';
 import '../services/connectivity_service.dart';
@@ -397,12 +398,7 @@ StreamBuilder<List<MoneyMovement>>(
             ),
           ),
           const SavingsScreen(),
-          const Center(
-              child: Text('Reports',
-                  style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF0e538f)))),
+          const ReportsScreen(),
           const NotesScreen(),
           _ProfileScreen(onThemeChanged: widget.onThemeChanged),
         ],

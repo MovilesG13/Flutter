@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
@@ -46,19 +47,10 @@ class _NotesScreenState extends State<NotesScreen> {
         });
 
         final imageFile = File(pickedFile.path);
+        final timestamp = DateTime.now().millisecondsSinceEpoch;
         
-        // Guardar en galería del dispositivo
-        try {
-          final bytes = await imageFile.readAsBytes();
-          await ImageGallerySaver.saveImage(
-            Uint8List.fromList(bytes),
-            quality: 100,
-            name: "note_${DateTime.now().millisecondsSinceEpoch}",
-          );
-        } catch (e) {
-          print('Error saving to gallery: $e');
-          // Continuar aunque falle guardar en galería
-        }
+        // Guardar en galería del dispositivo - optimizado: no bloquea el flujo principal
+        unawaited(_saveToGalleryAsync(pickedFile.path, timestamp));
 
         // Verificar conectividad antes de intentar subir
         final isOnline = ConnectivityService.instance.isOnline;
@@ -130,6 +122,22 @@ class _NotesScreenState extends State<NotesScreen> {
           _isUploading = false;
         });
       }
+    }
+  }
+
+  /// Guardar imagen en galería de forma asíncrona (no bloquea el flujo principal)
+  Future<void> _saveToGalleryAsync(String imagePath, int timestamp) async {
+    try {
+      final imageFile = File(imagePath);
+      final bytes = await imageFile.readAsBytes();
+      await ImageGallerySaver.saveImage(
+        Uint8List.fromList(bytes),
+        quality: 100,
+        name: "note_$timestamp",
+      );
+    } catch (e) {
+      print('Error saving to gallery: $e');
+      // No afecta el flujo principal
     }
   }
 

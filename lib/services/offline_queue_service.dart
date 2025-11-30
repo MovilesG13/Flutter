@@ -98,4 +98,20 @@ class OfflineQueueService {
       }
     }
   }
+
+  /// Get all pending expenses from offline queue
+  /// Returns a list of maps with 'category' and 'amount'
+  Future<List<Map<String, dynamic>>> getPendingExpenses() async {
+    final db = await _getDb();
+    final rows = await db.query(
+      'pending_movements',
+      where: 'type = ?',
+      whereArgs: ['expense'],
+    );
+    
+    return rows.map((row) => {
+      'category': row['category'] as String? ?? 'Uncategorized',
+      'amount': (row['amount'] as num).toDouble(),
+    }).toList();
+  }
 }
