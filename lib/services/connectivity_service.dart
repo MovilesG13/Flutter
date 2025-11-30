@@ -30,6 +30,7 @@ class ConnectivityService extends ChangeNotifier {
       await OfflineQueueService.instance.processQueue();
       await OfflineNotesQueueService.instance.processQueue();
     }
+    
 
     // Listen connectivity changes with debounce to avoid brief blips
     _connectivity.onConnectivityChanged.listen((results) async {
